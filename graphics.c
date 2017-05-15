@@ -69,7 +69,16 @@ map_t *loadMap(char *filename) {
   /*
   SDL_Surface *s=SDL_LoadBMP(filename);
   */
-  map_t *m=NULL;
+
+  map_t *m=(map_t*)malloc(sizeof(map_t));
+
+  m->voiture.x = 100;
+  m->voiture.y = 500;
+  m->voiture.vitesse = 3;
+  m->voiture.angle = 0;
+
+  m->voiture.type = TRUCK;
+
   return m;
 }
 
@@ -95,11 +104,18 @@ SDL_Renderer *openWindow(int w,int h) {
 */
 void paint(SDL_Renderer *r,map_t *m) {
   /* Fait un ecran noir */
-  SDL_SetRenderDrawColor(r, 0, 0, 0, 255 );
+  SDL_SetRenderDrawColor(r, 150, 128, 0, 255 );
   SDL_RenderClear(r);
   /* Definir ici le contenu graphique de la fenetre.
    */
 
+  SDL_Rect rect;
+  rect.x = m->voiture.x;
+  rect.y = m->voiture.y;
+  rect.h = 100;
+  rect.w = 100;
+
+  SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
   /* Affiche le tout  */
   SDL_RenderPresent(r);
 }
