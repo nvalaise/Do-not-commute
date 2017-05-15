@@ -1,0 +1,2 @@
+void timerWait();
+void timerInit();
