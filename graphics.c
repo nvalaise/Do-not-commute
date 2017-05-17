@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "graphics.h"
 #include "timer.h"
+
 /* Toutes les tuiles du jeu */
 SDL_Texture *tile[ALL];
 SDL_Texture *tile_background;
@@ -68,19 +69,54 @@ void loadTiles(SDL_Renderer *s, const map_t *m) {
 /* Lecture d'une carte, comme MAP 
    A REMPLIR
 */
-map_t *loadMap(char *filename, int width, int height) {
+map_t *loadMap(char *filename) {
   
   map_t *m=(map_t*)malloc(sizeof(map_t));
   m->background = SDL_LoadBMP(filename);
-  m->hauteur = height;
-  m->largeur = width;
+  m->hauteur = m->background->h;
+  m->largeur = m->background->w;
 
-  m->voiture.x = 100;
-  m->voiture.y = 500;
+
+  int i,j;
+  int compteur = 0;
+  for (i=0; i < m->largeur; i++) {
+    for (j=0; j < m->hauteur; j++) {
+      compteur = getpixel(m->background,i,j) == 0x00f ? compteur + 1 : compteur;
+    }
+  }
+
+  int** points;
+  points = (int*)malloc(sizeof(int*)*compteur);
+
+  for(i=0; i < compteur; i++) {
+    points[i] = (int*) malloc(sizeof(int)*2);
+  }
+
+  
+  compteur = 0;
+  for (i=0; i < m->largeur; i++) {
+    for (j=0; j < m->hauteur; j++) {
+      if(getpixel(m->background,i,j) == 0x00f) {
+        points[compteur][0] = i;
+        points[compteur][1] = j;
+        compteur=compteur+1;
+      }
+    }
+  }
+
+  printf("%d\n", compteur);
+
+  srand(time(NULL));
+  int rang = rand() % compteur;
+  printf("%d\n", rang);
   m->voiture.hauteur = 32;
   m->voiture.largeur = 32;
-  m->voiture.vitesse = 3;
-  m->voiture.angle = 10;
+
+  m->voiture.x = points[rang][0];
+  m->voiture.y = points[rang][1];
+
+  m->voiture.vitesse = 2;
+  m->voiture.angle = 90;
 
   m->voiture.type = VIPER;
 
@@ -126,8 +162,6 @@ void paint(SDL_Renderer *r,map_t *m) {
   rect.y = m->voiture.y;
   rect.h = m->voiture.hauteur;
   rect.w = m->voiture.largeur;
-
-  //printf("pixel en %f - %f : %d\n", m->voiture.x, m->voiture.y, getpixel((int)m->background, m->voiture.x + m->voiture.largeur/2, (int)m->voiture.y + m->voiture.hauteur/2));
 
   SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
   /* Affiche le tout  */

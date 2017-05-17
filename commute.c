@@ -6,20 +6,13 @@
 #include "timer.h"
 
 #define MAP "data/map0.bmp"
-#define WINDOW_HEIGHT 600
-#define WINDOW_WIDTH 800
-
-/*
-#define MAP "data/map2.bmp"
-#define WINDOW_HEIGHT 800
-#define WINDOW_WIDTH 1280
-*/
+//#define MAP "data/map2.bmp"
 
 int main(int argc,char *argv[]) {
   map_t *m;
   int finished=0;
-  m=loadMap(MAP, WINDOW_WIDTH,WINDOW_HEIGHT);
-  SDL_Renderer *r = openWindow(WINDOW_WIDTH,WINDOW_HEIGHT); /* A changer ! */
+  m=loadMap(MAP);
+  SDL_Renderer *r = openWindow(m->largeur,m->hauteur); /* A changer ! */
   loadTiles(r,m);
   timerInit();
   while (!finished) {

@@ -37,10 +37,34 @@ void update(map_t *m) {
   width = m->largeur-m->voiture.largeur;
   height = m->hauteur-m->voiture.hauteur;
 
+  float origine_x, origine_y;
+  origine_x = m->voiture.x;
+  origine_y = m->voiture.y;
+
   double angle = m->voiture.angle-90;
   double rad = angle * M_PI / 180.0;
+
+
   m->voiture.x += cos(rad) * m->voiture.vitesse;
   m->voiture.y += sin(rad) * m->voiture.vitesse;
+
+  int center_x = (int) m->voiture.x + m->voiture.largeur/2;
+  int center_y = (int) m->voiture.y + m->voiture.hauteur/2;
+
+  //printf("%04x\n",getpixel(m->background,center_x,center_y));
+  if (getpixel(m->background,center_x,center_y) == 0xfed ) {
+    m->voiture.x = origine_x;
+    m->voiture.y = origine_y;
+    printf("Immeuble\n");
+  } else if (getpixel(m->background,center_x,center_y) == 0xcea ) {
+    m->voiture.x += cos(rad) * m->voiture.vitesse / 10;
+    m->voiture.y += sin(rad) * m->voiture.vitesse / 10;
+    printf("Herbe\n");
+  } else {
+    m->voiture.x += cos(rad) * m->voiture.vitesse;
+    m->voiture.y += sin(rad) * m->voiture.vitesse;
+    printf("Route\n");
+  }
 
   if (m->voiture.x <= 0){
     m->voiture.x = 0;
@@ -54,4 +78,5 @@ void update(map_t *m) {
   if (m->voiture.y >= height){
     m->voiture.y = height;
   }
+
 }
