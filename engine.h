@@ -29,6 +29,11 @@ typedef struct {
   car_t voiture;
 
   SDL_Surface *background;
+
+  int** checkpoints;
+  int rang_checkpoints_src;
+  int rang_checkpoints_dest;
+
 } map_t;
 #define SIZE 64
 
