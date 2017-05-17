@@ -4,8 +4,6 @@
 #include <math.h>
 #include "engine.h"
 
-#define   M_PI   3.14159265358979323846 /* pi */
-
 /* Capture les evenements clavier/fenetre 
     Retourne 1 si il faut quitter le jeu, 0 sinon.
     A COMPLETER
@@ -21,10 +19,10 @@ int getEvent(map_t *m) {
       switch (event.key.keysym.sym) {
       case SDLK_ESCAPE:  return 1;
       case SDLK_LEFT:    
-        m->voiture.angle -= 15;
+        m->voiture.angle -= 12;
         break;
       case SDLK_RIGHT:  
-        m->voiture.angle += 15;
+        m->voiture.angle += 12;
         break;
       default: ;
       }
@@ -35,14 +33,25 @@ int getEvent(map_t *m) {
 
 /* A COMPLETER */
 void update(map_t *m) {
+  int width, height;
+  width = m->largeur-m->voiture.largeur;
+  height = m->hauteur-m->voiture.hauteur;
+
   double angle = m->voiture.angle-90;
   double rad = angle * M_PI / 180.0;
   m->voiture.x += cos(rad) * m->voiture.vitesse;
-  if(m->voiture.y > 0)
-    m->voiture.y += sin(rad) * m->voiture.vitesse;
-  else {
-    m->voiture.y = 1;
-  }
+  m->voiture.y += sin(rad) * m->voiture.vitesse;
 
-  printf("y : %d\n", m->voiture.y);
+  if (m->voiture.x <= 0){
+    m->voiture.x = 0;
+  }
+  if (m->voiture.x >= width){
+    m->voiture.x = width;
+  }
+  if (m->voiture.y <= 0){
+    m->voiture.y = 0;
+  }
+  if (m->voiture.y >= height){
+    m->voiture.y = height;
+  }
 }

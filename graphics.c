@@ -6,6 +6,7 @@
 #include "timer.h"
 /* Toutes les tuiles du jeu */
 SDL_Texture *tile[ALL];
+SDL_Texture *tile_background;
 /*  
    Doit etre avec le meme ordre que l'enum dans le .h 
 */
@@ -39,7 +40,7 @@ int getpixel(SDL_Surface *surface, int x, int y) {
   case 4: pixel= *(Uint32 *)p; break;
   default: pixel= 0;   
   }
-  printf(">>%d %d\n",surface->pitch,surface->format->BytesPerPixel);
+  //printf(">>%d %d\n",surface->pitch,surface->format->BytesPerPixel);
   SDL_GetRGB(pixel, surface->format, &r, &g, &b);
   r=r>>4;
   g=g>>4;
@@ -49,7 +50,7 @@ int getpixel(SDL_Surface *surface, int x, int y) {
 /* Charge toutes les tuiles du jeu
    DEJA ECRIT
  */
-void loadTiles(SDL_Renderer *s) {
+void loadTiles(SDL_Renderer *s, const map_t *m) {
   int i,j,k;
   SDL_SetRenderDrawColor(s, 0, 0, 0, 0);
   for (i=0; i<ALL; i++)  {
@@ -61,23 +62,27 @@ void loadTiles(SDL_Renderer *s) {
       SDL_FreeSurface(loadedImage);
     } else fprintf(stderr,"Missing file %s:%s\n",tilenames[i],SDL_GetError());
   }
+
+  tile_background = SDL_CreateTextureFromSurface(s, m->background);
 }
 /* Lecture d'une carte, comme MAP 
    A REMPLIR
 */
-map_t *loadMap(char *filename) {
-  /*
-  SDL_Surface *s=SDL_LoadBMP(filename);
-  */
-
+map_t *loadMap(char *filename, int width, int height) {
+  
   map_t *m=(map_t*)malloc(sizeof(map_t));
+  m->background = SDL_LoadBMP(filename);
+  m->hauteur = height;
+  m->largeur = width;
 
   m->voiture.x = 100;
   m->voiture.y = 500;
+  m->voiture.hauteur = 32;
+  m->voiture.largeur = 32;
   m->voiture.vitesse = 3;
-  m->voiture.angle = 0;
+  m->voiture.angle = 10;
 
-  m->voiture.type = TRUCK;
+  m->voiture.type = VIPER;
 
   return m;
 }
@@ -109,11 +114,20 @@ void paint(SDL_Renderer *r,map_t *m) {
   /* Definir ici le contenu graphique de la fenetre.
    */
 
+  SDL_Rect rect_bg;
+  rect_bg.x = 0;
+  rect_bg.y = 0;
+  rect_bg.h = m->hauteur;
+  rect_bg.w = m->largeur;
+  SDL_RenderCopy(r,tile_background,NULL,&rect_bg);
+
   SDL_Rect rect;
   rect.x = m->voiture.x;
   rect.y = m->voiture.y;
-  rect.h = 100;
-  rect.w = 100;
+  rect.h = m->voiture.hauteur;
+  rect.w = m->voiture.largeur;
+
+  //printf("pixel en %f - %f : %d\n", m->voiture.x, m->voiture.y, getpixel((int)m->background, m->voiture.x + m->voiture.largeur/2, (int)m->voiture.y + m->voiture.hauteur/2));
 
   SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
   /* Affiche le tout  */

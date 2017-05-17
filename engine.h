@@ -12,11 +12,23 @@ typedef enum {
 } type_t;
 
 typedef struct {
-  /* A COMPLETER */
+  float x, y;
+
+  int vitesse;
+  int angle;
+
+  float hauteur,largeur;
+
+  type_t type;
+
 } car_t;
 
 typedef struct {
-  /* A COMPLETER */
+  int hauteur,largeur; //dimension de l'écran
+  
+  car_t voiture;
+
+  SDL_Surface *background;
 } map_t;
 #define SIZE 64
 
