@@ -41,29 +41,42 @@ void update(map_t *m) {
   origine_x = m->voiture.x;
   origine_y = m->voiture.y;
 
-  int center_x = abs((int) m->voiture.x + m->voiture.largeur/2);
-  int center_y = abs((int) m->voiture.y + m->voiture.hauteur/2);
+  //printf("origine %f - %f\n", origine_x, origine_y);
+
+  int center_x = fabsf((int) m->voiture.x + m->voiture.largeur/2);
+  int center_y = fabsf((int) m->voiture.y + m->voiture.hauteur/2);
 
   double angle = m->voiture.angle-90;
   double rad = angle * M_PI / 180.0;
-  
+  //printf("rad %lf\n", rad);
+
+
+
   if (getpixel(m->background,center_x,center_y) == 0xcea ) {
     m->voiture.x += cos(rad) * m->voiture.vitesse / 2;
     m->voiture.y += sin(rad) * m->voiture.vitesse / 2;
 
-    printf("herbe\n");
+    //printf("herbe\n");
   } else {
     m->voiture.x += cos(rad) * m->voiture.vitesse;
     m->voiture.y += sin(rad) * m->voiture.vitesse; 
 
-    printf("route\n");
+    //printf("route\n");
 
   }
 
-  if (getpixel(m->background,center_x,center_y) == 0xfed ) {
+  int test_x = abs((int) fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(rad) * m->voiture.largeur)/2 ); // + cos(rad) + (1-sin(rad))
+  int test_y = abs((int) fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2); //+ sin(rad) + (1-cos(rad))
+
+  printf("x:%d - y: %d\n", test_x, test_y);
+
+  if (getpixel(m->background,test_x,test_y) == 0xfed) {
     m->voiture.x = origine_x;
-    m->voiture.y = origine_y;
-    printf("mur\n");
+    m->voiture.y = origine_y; 
+
+    //exit(0);
+
+    //printf("mur\n");
 
   }
 

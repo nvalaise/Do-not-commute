@@ -75,7 +75,7 @@ map_t *loadMap(char *filename) {
   m->background = SDL_LoadBMP(filename);
   m->hauteur = m->background->h;
   m->largeur = m->background->w;
-
+  printf("aa\n");
 
   int i,j;
   int compteur = 0;
@@ -119,7 +119,7 @@ map_t *loadMap(char *filename) {
   m->voiture.vitesse = 3;
   m->voiture.angle = 90;
 
-  m->voiture.type = CAR;
+  m->voiture.type = POLICE;
 
   printf("%d\n", m->checkpoints[m->rang_checkpoints_dest][0]+20);
 
@@ -179,6 +179,7 @@ void paint(SDL_Renderer *r,map_t *m) {
   SDL_RenderFillRect(r, &rect_dest);
 
 
+
   SDL_Rect rect;
   rect.x = m->voiture.x;
   rect.y = m->voiture.y;
@@ -186,6 +187,22 @@ void paint(SDL_Renderer *r,map_t *m) {
   rect.w = m->voiture.largeur;
 
   SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
+  
+
+  double angle = m->voiture.angle-90;
+  double rad = angle * M_PI / 180.0;
+
+  //SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
+  SDL_Rect car_x;
+  car_x.x = fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(rad) * m->voiture.largeur)/2 ; // + cos(rad) + (1-sin(rad))
+  car_x.y = fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2; //+ sin(rad) + (1-cos(rad))
+  car_x.h = 10;
+  car_x.w = 10;
+  //SDL_RenderFillRect(r, &car_x);
+
+
+
+
   /* Affiche le tout  */
   SDL_RenderPresent(r);
 }
