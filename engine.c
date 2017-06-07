@@ -6,7 +6,7 @@
 
 
 
-/* Capture les evenements clavier/fenetre 
+/* Capture les evenements clavier/fenetre
     Retourne 1 si il faut quitter le jeu, 0 sinon.
     A COMPLETER
 */
@@ -20,19 +20,19 @@ int getEvent(map_t *m) {
     if (event.type==SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
       case SDLK_ESCAPE:  return 1;
-      case SDLK_LEFT:    
+      case SDLK_LEFT:
         m->voiture.angle -= 12;
         break;
-      case SDLK_RIGHT:  
+      case SDLK_RIGHT:
         m->voiture.angle += 12;
         break;
-      default: 
+      default:
         break;
       }
-    } 
+    }
   }
   return 0;
-} 
+}
 
 void loadCheckpoints(map_t *m) {
   int i,j;
@@ -51,7 +51,7 @@ void loadCheckpoints(map_t *m) {
   for(i=0; i < compteur; i++) {
     m->checkpoints[i] = (int*) malloc(sizeof(int)*2);
   }
-  
+
 
   // attribution des coordonnées
   compteur = 0;
@@ -89,7 +89,7 @@ void initGame(map_t *m) {
 
   m->voiture.checkpoints_src = m->rang_checkpoints_src;
   m->voiture.checkpoints_dest = m->rang_checkpoints_dest;
-  
+
 
   srand(time(NULL));
   int rand_type = rand() % 9;
@@ -118,7 +118,7 @@ void performedCar(map_t *m) {
 
   } else { // route
     m->voiture.x += cos(rad) * m->voiture.vitesse;
-    m->voiture.y += sin(rad) * m->voiture.vitesse; 
+    m->voiture.y += sin(rad) * m->voiture.vitesse;
 
   }
 
@@ -127,7 +127,7 @@ void performedCar(map_t *m) {
 
   if (getpixel(m->background,test_x,test_y) == 0xfed) { // mur
     m->voiture.x = origine_x;
-    m->voiture.y = origine_y; 
+    m->voiture.y = origine_y;
 
   }
 
@@ -154,7 +154,7 @@ int carArriveInDestination(map_t *m) {
 
   int center_x = fabsf((int) m->voiture.x + m->voiture.largeur/2);
   int center_y = fabsf((int) m->voiture.y + m->voiture.hauteur/2);
-  
+
   SDL_Point car_center;
   car_center.x = center_x;
   car_center.y = center_y;
@@ -170,4 +170,3 @@ int PointInRect(const SDL_Point *p, const SDL_Rect *r)
     return ( (p->x >= r->x) && (p->x < (r->x + r->w)) &&
              (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? 1 : 0;
 }
-

@@ -1,7 +1,7 @@
 #LDFLAGS=-F/Library/Frameworks -framework SDL2 -framework Cocoa -I/System/Library/Frameworks/OpenGL.framework/Headers -framework OpenGL
 #CFLAGS=-g -O2 -Wall -I/Library/Frameworks/SDL2.framework/Headers  -I/System/Library/Frameworks/OpenGL.framework/Headers
 CFLAGS=-g -Wall `sdl2-config --cflags`
-LDFLAGS=-g -Wall `sdl2-config --libs`
+LDFLAGS=-g -Wall `sdl2-config --libs` -lm -lSDL2_mixer
 
 
 all: commute

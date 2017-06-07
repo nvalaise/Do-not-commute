@@ -8,11 +8,11 @@
 /* Toutes les tuiles du jeu */
 SDL_Texture *tile[ALL];
 SDL_Texture *tile_background;
-/*  
-   Doit etre avec le meme ordre que l'enum dans le .h 
+/*
+   Doit etre avec le meme ordre que l'enum dans le .h
 */
 const char *tilenames[]={
-  "data/ambulance.bmp",	
+  "data/ambulance.bmp",
   "data/minitruck.bmp",
   "data/taxi.bmp",
   "data/sport.bmp",
@@ -39,7 +39,7 @@ int getpixel(SDL_Surface *surface, int x, int y) {
     else pixel= p[0] | p[1] << 8 | p[2] << 16;
     break;
   case 4: pixel= *(Uint32 *)p; break;
-  default: pixel= 0;   
+  default: pixel= 0;
   }
   //printf(">>%d %d\n",surface->pitch,surface->format->BytesPerPixel);
   SDL_GetRGB(pixel, surface->format, &r, &g, &b);
@@ -68,11 +68,11 @@ void loadTiles(SDL_Renderer *s, const map_t *m) {
 
   tile_background = SDL_CreateTextureFromSurface(s, m->background);
 }
-/* Lecture d'une carte, comme MAP 
+/* Lecture d'une carte, comme MAP
    A REMPLIR
 */
 map_t *loadMap(char *filename) {
-  
+
   map_t *m=(map_t*)malloc(sizeof(map_t));
   m->background = SDL_LoadBMP(filename);
   m->hauteur = m->background->h;
@@ -89,7 +89,7 @@ map_t *loadMap(char *filename) {
   return m;
 }
 
-/* Initialisation de la bibliotheque SDL, ouverture d'une fenetre de taille 
+/* Initialisation de la bibliotheque SDL, ouverture d'une fenetre de taille
    w*SIZE x h*SIZE
  */
 SDL_Renderer *openWindow(int w,int h) {
@@ -107,7 +107,7 @@ SDL_Renderer *openWindow(int w,int h) {
   SDL_RenderSetLogicalSize(sdlRenderer, w, h);
   return sdlRenderer;
 }
-/* Redessine la carte, les joueurs, les effets, ... 
+/* Redessine la carte, les joueurs, les effets, ...
 */
 void paint(SDL_Renderer *r,map_t *m, int t) {
   /* Fait un ecran noir */
@@ -165,7 +165,7 @@ void paint(SDL_Renderer *r,map_t *m, int t) {
   rect.h = m->voiture.hauteur;
   rect.w = m->voiture.largeur;
   SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
-  
+
 
   paintEnemies(r,m,t);
 
@@ -201,4 +201,3 @@ void paintEnemies(SDL_Renderer *r,map_t *m, int t) {
     SDL_RenderCopyEx(r, tile[voiture_e.type], NULL, &rect, voiture_e.angle, NULL, SDL_FLIP_NONE);
   }
 }
-
