@@ -159,13 +159,13 @@ int carArriveInDestination(map_t *m) {
   car_center.x = center_x;
   car_center.y = center_y;
 
-  if(SDL_PointInRect(&car_center, &rect_dest)) {
+  if(PointInRect(&car_center, &rect_dest)) {
     return 1;
   }
   return 0;
 }
 
-int SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
+int PointInRect(const SDL_Point *p, const SDL_Rect *r)
 {
     return ( (p->x >= r->x) && (p->x < (r->x + r->w)) &&
              (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? 1 : 0;
