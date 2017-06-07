@@ -34,26 +34,26 @@ int getEvent(map_t *m) {
   return 0;
 } 
 
-/* A COMPLETER */
-void update(map_t *m) {
-  performedCar(m);
-}
-
-void initGame(map_t *m) {
+void loadCheckpoints(map_t *m) {
   int i,j;
   int compteur = 0;
+  // compte le nombre de checkpoints
   for (i=0; i < m->largeur; i++) {
     for (j=0; j < m->hauteur; j++) {
       compteur = getpixel(m->background,i,j) == 0x00f ? compteur + 1 : compteur;
     }
   }
 
-  m->checkpoints = (int*)malloc(sizeof(int*)*compteur);
+  m->nb_checkpoints = compteur;
+  m->checkpoints = (int*)malloc(sizeof(int*)*m->nb_checkpoints);
 
+  // pour chaque chepoints, allocation de 2 cases
   for(i=0; i < compteur; i++) {
     m->checkpoints[i] = (int*) malloc(sizeof(int)*2);
   }
   
+
+  // attribution des coordonnées
   compteur = 0;
   for (i=0; i < m->largeur; i++) {
     for (j=0; j < m->hauteur; j++) {
@@ -64,18 +64,37 @@ void initGame(map_t *m) {
       }
     }
   }
+}
+
+/* A COMPLETER */
+void update(map_t *m) {
+  performedCar(m);
+
+  m->voiture.temps = m->temps;
+  m->cars[m->level][m->voiture.temps] = m->voiture;
+}
+
+void initGame(map_t *m) {
 
   srand(time(NULL));
-  m->rang_checkpoints_src = rand() % compteur;
+  m->rang_checkpoints_src = rand() % m->nb_checkpoints;
 
   do {
-    m->rang_checkpoints_dest = rand() % compteur;
+    m->rang_checkpoints_dest = rand() % m->nb_checkpoints;
   } while(m->rang_checkpoints_src == m->rang_checkpoints_dest);
 
 
   m->voiture.x = m->checkpoints[m->rang_checkpoints_src][0] - 20;
   m->voiture.y = m->checkpoints[m->rang_checkpoints_src][1] - 20;
 
+  m->voiture.checkpoints_src = m->rang_checkpoints_src;
+  m->voiture.checkpoints_dest = m->rang_checkpoints_dest;
+  
+
+  srand(time(NULL));
+  int rand_type = rand() % 9;
+
+  m->voiture.type = (type_t)rand_type;
 }
 
 void performedCar(map_t *m) {
@@ -144,5 +163,11 @@ int carArriveInDestination(map_t *m) {
     return 1;
   }
   return 0;
+}
+
+int SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
+{
+    return ( (p->x >= r->x) && (p->x < (r->x + r->w)) &&
+             (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? 1 : 0;
 }
 

@@ -3,19 +3,21 @@
 
 typedef enum {
   AMBULANCE=0,
-  MINITRUCK,
-  TAXI,
-  SPORT,
-  MINIVAN,
-  TRUCK,
-  CAR,
-  POLICE,
-  VIPER,
-  ALL
+  MINITRUCK=1,
+  TAXI=2,
+  SPORT=3,
+  MINIVAN=4,
+  TRUCK=5,
+  CAR=6,
+  POLICE=7,
+  VIPER=8,
+  ALL=9
 } type_t;
 
 typedef struct {
   float x, y;
+
+  int checkpoints_src, checkpoints_dest;
 
   int vitesse;
   int angle;
@@ -24,6 +26,8 @@ typedef struct {
 
   type_t type;
 
+  int temps;
+
 } car_t;
 
 typedef struct {
@@ -31,11 +35,14 @@ typedef struct {
   
   car_t voiture;
 
+  car_t cars[20][5000];
+
   int level;
 
   SDL_Surface *background;
 
   int** checkpoints;
+  int nb_checkpoints;
   int rang_checkpoints_src;
   int rang_checkpoints_dest;
 
@@ -47,7 +54,10 @@ typedef struct {
 //#define SIZE 64
 
 int getEvent(map_t *m);
+void loadCheckpoints(map_t *m);
 void update(map_t *m);
 void performedCar(map_t *m);
 int carArriveInDestination(map_t *m);
 void initGame(map_t *m);
+
+int PointInRect(const SDL_Point *p, const SDL_Rect *r);
