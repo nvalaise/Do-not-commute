@@ -4,7 +4,7 @@
 #include <math.h>
 #include "engine.h"
 
-#define   M_PI   3.14159265358979323846
+
 
 /* Capture les evenements clavier/fenetre 
     Retourne 1 si il faut quitter le jeu, 0 sinon.
@@ -26,7 +26,8 @@ int getEvent(map_t *m) {
       case SDLK_RIGHT:  
         m->voiture.angle += 12;
         break;
-      default: ;
+      default: 
+        break;
       }
     } 
   }
@@ -35,58 +36,7 @@ int getEvent(map_t *m) {
 
 /* A COMPLETER */
 void update(map_t *m) {
-  int width, height;
-  width = m->largeur-m->voiture.largeur;
-  height = m->hauteur-m->voiture.hauteur;
-
-  float origine_x, origine_y;
-  origine_x = m->voiture.x;
-  origine_y = m->voiture.y;
-
-  //printf("origine %f - %f\n", origine_x, origine_y);
-
-  int center_x = fabsf((int) m->voiture.x + m->voiture.largeur/2);
-  int center_y = fabsf((int) m->voiture.y + m->voiture.hauteur/2);
-
-  double angle = m->voiture.angle-90;
-  double rad = angle * M_PI / 180.0;
-  //printf("rad %lf\n", rad);
-
-
-
-  if (getpixel(m->background,center_x,center_y) == 0xcea ) { // herbe
-    m->voiture.x += cos(rad) * m->voiture.vitesse / 2;
-    m->voiture.y += sin(rad) * m->voiture.vitesse / 2;
-
-  } else { // route
-    m->voiture.x += cos(rad) * m->voiture.vitesse;
-    m->voiture.y += sin(rad) * m->voiture.vitesse; 
-
-  }
-
-  int test_x = abs((int) fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(rad) * m->voiture.largeur)/2 ); // + cos(rad) + (1-sin(rad))
-  int test_y = abs((int) fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2); //+ sin(rad) + (1-cos(rad))
-
-  if (getpixel(m->background,test_x,test_y) == 0xfed) { // mur
-    m->voiture.x = origine_x;
-    m->voiture.y = origine_y; 
-
-  }
-
-
-  if (m->voiture.x <= 0){
-    m->voiture.x = 0;
-  }
-  if (m->voiture.x >= width){
-    m->voiture.x = width;
-  }
-  if (m->voiture.y <= 0){
-    m->voiture.y = 0;
-  }
-  if (m->voiture.y >= height){
-    m->voiture.y = height;
-  }
-
+  performedCar(m);
 }
 
 void initGame(map_t *m) {
@@ -128,13 +78,60 @@ void initGame(map_t *m) {
 
 }
 
+void performedCar(map_t *m) {
+  int width, height;
+  width = m->largeur-m->voiture.largeur;
+  height = m->hauteur-m->voiture.hauteur;
+
+  float origine_x, origine_y;
+  origine_x = m->voiture.x;
+  origine_y = m->voiture.y;
+
+  int center_x = fabsf((int) m->voiture.x + m->voiture.largeur/2);
+  int center_y = fabsf((int) m->voiture.y + m->voiture.hauteur/2);
+
+  double angle = m->voiture.angle-90;
+  double rad = angle * M_PI / 180.0;
+
+  if (getpixel(m->background,center_x,center_y) == 0xcea ) { // herbe
+    m->voiture.x += cos(rad) * m->voiture.vitesse / 2;
+    m->voiture.y += sin(rad) * m->voiture.vitesse / 2;
+
+  } else { // route
+    m->voiture.x += cos(rad) * m->voiture.vitesse;
+    m->voiture.y += sin(rad) * m->voiture.vitesse; 
+
+  }
+
+  int test_x = abs((int) fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(rad) * m->voiture.largeur)/2 ); // + cos(rad) + (1-sin(rad))
+  int test_y = abs((int) fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2); //+ sin(rad) + (1-cos(rad))
+
+  if (getpixel(m->background,test_x,test_y) == 0xfed) { // mur
+    m->voiture.x = origine_x;
+    m->voiture.y = origine_y; 
+
+  }
+
+  if (m->voiture.x <= 0){
+    m->voiture.x = 0;
+  }
+  if (m->voiture.x >= width){
+    m->voiture.x = width;
+  }
+  if (m->voiture.y <= 10){
+    m->voiture.y = 10;
+  }
+  if (m->voiture.y >= height){
+    m->voiture.y = height;
+  }
+}
+
 int carArriveInDestination(map_t *m) {
   SDL_Rect rect_dest;
   rect_dest.x = m->checkpoints[m->rang_checkpoints_dest][0]-20;
   rect_dest.y = m->checkpoints[m->rang_checkpoints_dest][1]-20;
   rect_dest.h = 40;
   rect_dest.w = 40;
-
 
   int center_x = fabsf((int) m->voiture.x + m->voiture.largeur/2);
   int center_y = fabsf((int) m->voiture.y + m->voiture.hauteur/2);
@@ -146,7 +143,6 @@ int carArriveInDestination(map_t *m) {
   if(SDL_PointInRect(&car_center, &rect_dest)) {
     return 1;
   }
-
   return 0;
 }
 

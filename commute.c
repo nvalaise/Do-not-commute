@@ -15,21 +15,47 @@ int main(int argc,char *argv[]) {
 
   m=loadMap(MAP);
   initGame(m);
-
-  SDL_Renderer *r = openWindow(m->largeur,m->hauteur); /* A changer ! */
-
+  SDL_Renderer *r = openWindow(m->largeur,m->hauteur);
   loadTiles(r,m);
 
   timerInit();
 
+  m->temps = 0;
+  int tour = 0;
+  int temps = 1;
+
 
   while (!finished) {
-    //printf("%zu\n", getNext()/1000);
 
     finished=getEvent(m);
-    update(m);
-    paint(r,m);
+
+
+    if(tour > 200) {
+      update(m);
+      m->temps++;
+
+      if(carArriveInDestination(m) == 1) {
+        tour=0;
+        m->temps=0;
+        m->level++;
+        initGame(m);
+      }
+      
+      int secondes = (getNext() - m->temps_1)/ 1000;
+      
+      printf("timer %d -  temps %d\n", getNext(), m->temps);
+
+      if (secondes > TEMPS_MAX) {
+        exit(0);
+      }
+    } else if (m->level == 0 && tour < 200) {
+      m->temps_1 = getNext();
+    }
     timerWait();
+
+    paint(r,m);
+    tour++;
+
   }
   return 0;
 }
