@@ -14,17 +14,22 @@ int main(int argc,char *argv[]) {
   int finished=0;
 
   m=loadMap(MAP);
-  printf("c\n");
+  initGame(m);
+
   SDL_Renderer *r = openWindow(m->largeur,m->hauteur); /* A changer ! */
-  printf("d\n");
+
   loadTiles(r,m);
-  printf("e\n");
+
   timerInit();
+
+
   while (!finished) {
+    //printf("%zu\n", getNext()/1000);
+
     finished=getEvent(m);
     update(m);
     paint(r,m);
     timerWait();
-    }
+  }
   return 0;
 }

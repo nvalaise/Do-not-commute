@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "engine.h"
 #include "graphics.h"
 #include "timer.h"
@@ -75,55 +76,18 @@ map_t *loadMap(char *filename) {
   m->background = SDL_LoadBMP(filename);
   m->hauteur = m->background->h;
   m->largeur = m->background->w;
-  printf("aa\n");
 
-  int i,j;
-  int compteur = 0;
-  for (i=0; i < m->largeur; i++) {
-    for (j=0; j < m->hauteur; j++) {
-      compteur = getpixel(m->background,i,j) == 0x00f ? compteur + 1 : compteur;
-    }
-  }
-
-  m->checkpoints = (int*)malloc(sizeof(int*)*compteur);
-
-  for(i=0; i < compteur; i++) {
-    m->checkpoints[i] = (int*) malloc(sizeof(int)*2);
-  }
-
-  
-  compteur = 0;
-  for (i=0; i < m->largeur; i++) {
-    for (j=0; j < m->hauteur; j++) {
-      if(getpixel(m->background,i,j) == 0x00f) {
-        m->checkpoints[compteur][0] = i;
-        m->checkpoints[compteur][1] = j;
-        compteur=compteur+1;
-      }
-    }
-  }
-
-  srand(time(NULL));
-  m->rang_checkpoints_src = rand() % compteur;
 
   m->voiture.hauteur = 32;
   m->voiture.largeur = 32;
-
-  m->voiture.x = m->checkpoints[m->rang_checkpoints_src][0] - 20;
-  m->voiture.y = m->checkpoints[m->rang_checkpoints_src][1] - 20;
-
-  do {
-    m->rang_checkpoints_dest = rand() % compteur;
-  } while(m->rang_checkpoints_src == m->rang_checkpoints_dest);
 
   m->voiture.vitesse = 3;
   m->voiture.angle = 90;
 
   m->voiture.type = POLICE;
 
-  printf("%d\n", m->checkpoints[m->rang_checkpoints_dest][0]+20);
-
-  printf("%d\n", m->checkpoints[m->rang_checkpoints_dest][1]+20);
+  //printf("%d\n", m->checkpoints[m->rang_checkpoints_dest][0]+20);
+  //printf("%d\n", m->checkpoints[m->rang_checkpoints_dest][1]+20);
 
   return m;
 }
@@ -162,7 +126,7 @@ void paint(SDL_Renderer *r,map_t *m) {
   rect_bg.w = m->largeur;
   SDL_RenderCopy(r,tile_background,NULL,&rect_bg);
 
-  SDL_SetRenderDrawColor(r, 0, 255, 0, 255 );
+  SDL_SetRenderDrawColor(r, 200, 200, 200, 255 );
   SDL_Rect rect_src;
   rect_src.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
   rect_src.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
@@ -192,15 +156,13 @@ void paint(SDL_Renderer *r,map_t *m) {
   double angle = m->voiture.angle-90;
   double rad = angle * M_PI / 180.0;
 
-  //SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
+  SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
   SDL_Rect car_x;
-  car_x.x = fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(rad) * m->voiture.largeur)/2 ; // + cos(rad) + (1-sin(rad))
-  car_x.y = fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2; //+ sin(rad) + (1-cos(rad))
+  car_x.x = fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
+  car_x.y = fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
   car_x.h = 10;
   car_x.w = 10;
-  //SDL_RenderFillRect(r, &car_x);
-
-
+  SDL_RenderFillRect(r, &car_x);
 
 
   /* Affiche le tout  */

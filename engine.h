@@ -39,3 +39,5 @@ typedef struct {
 
 int getEvent(map_t *m);
 void update(map_t *m);
+int carArrivedInDestination(map_t *m);
+void initGame(map_t *m);

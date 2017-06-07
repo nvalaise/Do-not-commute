@@ -13,3 +13,7 @@ void timerWait() {
   if(next>now) SDL_Delay(next-now);
   next+=TICK_INTERVAL;
 }
+
+Uint32 getNext(){
+	return next;
+}
