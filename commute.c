@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL2_mixer/SDL_mixer.h>
 #include "engine.h"
 #include "graphics.h"
 #include "timer.h"
