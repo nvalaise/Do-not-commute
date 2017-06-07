@@ -4,8 +4,10 @@
 #include "engine.h"
 #include "graphics.h"
 #include "timer.h"
+
 /* Toutes les tuiles du jeu */
 SDL_Texture *tile[ALL];
+SDL_Texture *tile_background;
 /*  
    Doit etre avec le meme ordre que l'enum dans le .h 
 */
@@ -39,7 +41,7 @@ int getpixel(SDL_Surface *surface, int x, int y) {
   case 4: pixel= *(Uint32 *)p; break;
   default: pixel= 0;   
   }
-  printf(">>%d %d\n",surface->pitch,surface->format->BytesPerPixel);
+  //printf(">>%d %d\n",surface->pitch,surface->format->BytesPerPixel);
   SDL_GetRGB(pixel, surface->format, &r, &g, &b);
   r=r>>4;
   g=g>>4;
@@ -49,7 +51,7 @@ int getpixel(SDL_Surface *surface, int x, int y) {
 /* Charge toutes les tuiles du jeu
    DEJA ECRIT
  */
-void loadTiles(SDL_Renderer *s) {
+void loadTiles(SDL_Renderer *s, const map_t *m) {
   int i,j,k;
   SDL_SetRenderDrawColor(s, 0, 0, 0, 0);
   for (i=0; i<ALL; i++)  {
@@ -61,15 +63,28 @@ void loadTiles(SDL_Renderer *s) {
       SDL_FreeSurface(loadedImage);
     } else fprintf(stderr,"Missing file %s:%s\n",tilenames[i],SDL_GetError());
   }
+
+  tile_background = SDL_CreateTextureFromSurface(s, m->background);
 }
 /* Lecture d'une carte, comme MAP 
    A REMPLIR
 */
 map_t *loadMap(char *filename) {
-  /*
-  SDL_Surface *s=SDL_LoadBMP(filename);
-  */
-  map_t *m=NULL;
+  
+  map_t *m=(map_t*)malloc(sizeof(map_t));
+  m->background = SDL_LoadBMP(filename);
+  m->hauteur = m->background->h;
+  m->largeur = m->background->w;
+  m->level = 0;
+
+  m->voiture.hauteur = 32;
+  m->voiture.largeur = 32;
+
+  m->voiture.vitesse = 2;
+  m->voiture.angle = 90;
+
+  m->voiture.type = POLICE;
+
   return m;
 }
 
@@ -95,10 +110,76 @@ SDL_Renderer *openWindow(int w,int h) {
 */
 void paint(SDL_Renderer *r,map_t *m) {
   /* Fait un ecran noir */
-  SDL_SetRenderDrawColor(r, 0, 0, 0, 255 );
+  SDL_SetRenderDrawColor(r, 0, 0, 255, 255 );
   SDL_RenderClear(r);
   /* Definir ici le contenu graphique de la fenetre.
    */
+
+  SDL_Rect rect_bg;
+  rect_bg.x = 0;
+  rect_bg.y = 10;
+  rect_bg.h = m->hauteur;
+  rect_bg.w = m->largeur;
+  SDL_RenderCopy(r,tile_background,NULL,&rect_bg);
+
+
+  SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
+
+  SDL_Rect rect_progression_bg;
+  rect_progression_bg.x = 0;
+  rect_progression_bg.y = 0;
+  rect_progression_bg.h = 10;
+  rect_progression_bg.w = m->largeur;
+  SDL_RenderFillRect(r, &rect_progression_bg);
+
+
+  int secondes = (getNext() - m->temps_1)/ 1000;
+  SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
+  SDL_Rect rect_progression;
+  rect_progression.x = 0;
+  rect_progression.y = 0;
+  rect_progression.h = 10;
+  rect_progression.w = (secondes*m->largeur) / TEMPS_MAX;
+  SDL_RenderFillRect(r, &rect_progression);
+
+  SDL_SetRenderDrawColor(r, 200, 200, 200, 255 );
+  SDL_Rect rect_src;
+  rect_src.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
+  rect_src.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
+  rect_src.h = 40;
+  rect_src.w = 40;
+  SDL_RenderFillRect(r, &rect_src);
+
+  SDL_SetRenderDrawColor(r, 0, 0, 255, 255 );
+  SDL_Rect rect_dest;
+  rect_dest.x = m->checkpoints[m->rang_checkpoints_dest][0]-20;
+  rect_dest.y = m->checkpoints[m->rang_checkpoints_dest][1]-20;
+  rect_dest.h = 40;
+  rect_dest.w = 40;
+  SDL_RenderFillRect(r, &rect_dest);
+
+
+
+  SDL_Rect rect;
+  rect.x = m->voiture.x;
+  rect.y = m->voiture.y;
+  rect.h = m->voiture.hauteur;
+  rect.w = m->voiture.largeur;
+  SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
+  
+
+  double angle = m->voiture.angle-90;
+  double rad = angle * M_PI / 180.0;
+
+  SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
+  SDL_Rect car_x;
+  car_x.x = fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
+  car_x.y = fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
+  car_x.h = 10;
+  car_x.w = 10;
+  //SDL_RenderFillRect(r, &car_x);
+
+
 
   /* Affiche le tout  */
   SDL_RenderPresent(r);

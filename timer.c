@@ -3,6 +3,7 @@
 
 Uint32 next;
 
+
 void timerInit() {
   next= SDL_GetTicks() + TICK_INTERVAL;
 }
@@ -12,4 +13,12 @@ void timerWait() {
   now = SDL_GetTicks();
   if(next>now) SDL_Delay(next-now);
   next+=TICK_INTERVAL;
+}
+
+void timerReinit() {
+  next = 0;
+}
+
+Uint32 getNext(){
+	return next;
 }

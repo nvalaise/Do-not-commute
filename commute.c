@@ -4,20 +4,58 @@
 #include "engine.h"
 #include "graphics.h"
 #include "timer.h"
-#define MAP "data/map.bmp"
+
+#define MAP "data/map0.bmp"
+//#define MAP "data/map2.bmp"
 
 int main(int argc,char *argv[]) {
+
   map_t *m;
   int finished=0;
+
   m=loadMap(MAP);
-  SDL_Renderer *r = openWindow(800,600); /* A changer ! */
-  loadTiles(r);
+  initGame(m);
+  SDL_Renderer *r = openWindow(m->largeur,m->hauteur);
+  loadTiles(r,m);
+
   timerInit();
+
+  m->temps = 0;
+  int tour = 0;
+  int temps = 1;
+
+
   while (!finished) {
+
     finished=getEvent(m);
-    update(m);
-    paint(r,m);
-    timerWait();
+
+
+    if(tour > 200) {
+      update(m);
+      m->temps++;
+
+      if(carArriveInDestination(m) == 1) {
+        tour=0;
+        m->temps=0;
+        m->level++;
+        initGame(m);
+      }
+      
+      int secondes = (getNext() - m->temps_1)/ 1000;
+      
+      printf("timer %d -  temps %d\n", getNext(), m->temps);
+
+      if (secondes > TEMPS_MAX) {
+        exit(0);
+      }
+    } else if (m->level == 0 && tour < 200) {
+      m->temps_1 = getNext();
     }
+    timerWait();
+
+    paint(r,m);
+    tour++;
+
+  }
   return 0;
 }
