@@ -14,6 +14,7 @@ int main(int argc,char *argv[]) {
   int finished=0;
 
   m=loadMap(MAP);
+  loadCheckpoints(m);
   initGame(m);
   SDL_Renderer *r = openWindow(m->largeur,m->hauteur);
   loadTiles(r,m);
@@ -22,8 +23,6 @@ int main(int argc,char *argv[]) {
 
   m->temps = 0;
   int tour = 0;
-  int temps = 1;
-
 
   while (!finished) {
 
@@ -42,20 +41,18 @@ int main(int argc,char *argv[]) {
       }
       
       int secondes = (getNext() - m->temps_1)/ 1000;
-      
-      printf("timer %d -  temps %d\n", getNext(), m->temps);
-
       if (secondes > TEMPS_MAX) {
         exit(0);
       }
+
     } else if (m->level == 0 && tour < 200) {
       m->temps_1 = getNext();
     }
     timerWait();
 
-    paint(r,m);
-    tour++;
+    paint(r,m,m->temps);
 
+    tour++;
   }
   return 0;
 }
