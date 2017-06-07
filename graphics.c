@@ -53,13 +53,7 @@ int getpixel(SDL_Surface *surface, int x, int y) {
  */
 void loadTiles(SDL_Renderer *s, const map_t *m) {
 
-    if (SDL_OpenAudio(&audio, NULL) < 0)
-    {
-        fprintf(stderr, "Erreur d'ouverture audio: %s\n", SDL_GetError());
-        return (-1);
-    }
 
-  
   int i,j,k;
   SDL_SetRenderDrawColor(s, 0, 0, 0, 0);
   for (i=0; i<ALL; i++)  {
