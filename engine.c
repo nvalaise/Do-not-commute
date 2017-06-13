@@ -26,6 +26,9 @@ int getEvent(map_t *m) {
       case SDLK_RIGHT:
         m->voiture.angle += 12;
         break;
+      case SDLK_SPACE:
+        klakson(m); 
+        break;
       default:
         break;
       }
@@ -84,8 +87,8 @@ void initGame(map_t *m) {
   } while(m->rang_checkpoints_src == m->rang_checkpoints_dest);
 
 
-  m->voiture.x = m->checkpoints[m->rang_checkpoints_src][0] - 20;
-  m->voiture.y = m->checkpoints[m->rang_checkpoints_src][1] - 20;
+  m->voiture.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
+  m->voiture.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
 
   m->voiture.checkpoints_src = m->rang_checkpoints_src;
   m->voiture.checkpoints_dest = m->rang_checkpoints_dest;
@@ -169,4 +172,53 @@ int PointInRect(const SDL_Point *p, const SDL_Rect *r)
 {
     return ( (p->x >= r->x) && (p->x < (r->x + r->w)) &&
              (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? 1 : 0;
+}
+
+
+
+void klakson(map_t *m) {
+  int i, j;
+  const int delta = 200;
+  const int t = m->temps;
+
+  const float distance = 150.0;
+
+
+  const float car_center_x = m->voiture.x + m->voiture.largeur/2;
+  const float car_center_y = m->voiture.y + m->voiture.hauteur/2;
+
+
+  float center_x, center_y;
+  for(i = 0; i < m->level; i++) {
+    car_t voiture_e[NB_TEMPS];
+    for(j=0;j<NB_TEMPS;j++)
+      voiture_e[j] = m->cars[i][j];
+
+
+    center_x = voiture_e[t].x + voiture_e[t].largeur/2;
+    center_y = voiture_e[t].y + voiture_e[t].hauteur/2;
+    
+    //if(sqrt(pow((car_center_x-center_x),2) + pow((car_center_y-center_y),2.0) ) < distance) {
+      
+      for(j=t;j+delta<NB_TEMPS;j++) { // décalage
+
+        if(m->cars[i][j].temps == 0) {
+          break;
+        }
+        
+        m->cars[i][j+delta] = voiture_e[j];
+        m->cars[i][j].temps += delta;
+
+      }
+
+      for(j=t;j<t+delta && j<NB_TEMPS;j++) { // arret
+
+          m->cars[i][j] = m->cars[i][t];
+          m->cars[i][j].temps += delta;
+
+      }
+
+      //printf("DETECTED : %d : %d (%f px)\n", t, i, sqrt(pow((car_center_x-center_x),2) + pow((car_center_y-center_y),2.0) ));
+    //}
+  }
 }

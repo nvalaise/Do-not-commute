@@ -189,7 +189,7 @@ void paint(SDL_Renderer *r,map_t *m, int t) {
   SDL_RenderPresent(r);
 }
 
-void paintEnemies(SDL_Renderer *r,map_t *m, int t) {
+inline void paintEnemies(SDL_Renderer *r,map_t *m, int t) {
   int i;
   for(i = 0; i < m->level; i++) {
     car_t voiture_e = m->cars[i][t];

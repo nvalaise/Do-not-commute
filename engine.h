@@ -1,6 +1,8 @@
 #define M_PI 3.14159265358979323846
 #define TEMPS_MAX 90
 
+#define NB_TEMPS 8000
+
 typedef enum {
   AMBULANCE=0,
   MINITRUCK=1,
@@ -35,7 +37,7 @@ typedef struct {
   
   car_t voiture;
 
-  car_t cars[20][5000];
+  car_t cars[20][NB_TEMPS];
 
   int level;
 
@@ -61,3 +63,4 @@ int carArriveInDestination(map_t *m);
 void initGame(map_t *m);
 
 int PointInRect(const SDL_Point *p, const SDL_Rect *r);
+void klakson(map_t *m);

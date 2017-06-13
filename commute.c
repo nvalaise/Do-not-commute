@@ -33,12 +33,11 @@ int main(int argc,char *argv[]) {
 
 
   Mix_Music *musique; //Création du pointeur de type Mix_Music
-  musique = Mix_LoadMUS("data/WIEE.mp3"); //Chargement de la musique
-  Mix_PlayMusic(musique, -1); //Jouer infiniment la musique
+  musique = Mix_LoadMUS("data/Oops.mp3"); //Chargement de la musique
+  Mix_PlayChannel(1, musique, 0);
   while (!finished) {
 
     finished=getEvent(m);
-
 
     if(tour > 200) {
 
@@ -51,16 +50,26 @@ int main(int argc,char *argv[]) {
         m->level++;
         initGame(m);
 
-        Mix_HaltMusic();
+        Mix_Pause(1);
       }
 
       int secondes = (getNext() - m->temps_1)/ 1000;
       if (secondes > TEMPS_MAX) {
-        exit(0);
+        //exit(0);
       }
 
     } else if (m->level == 0 && tour < 200) {
-      m->temps_1 = getNext();
+      if(Mix_Paused(1) == 1) //Si le canal 2 est en pause
+      {
+        Mix_Resume(1); //Le canal 2 peut maintenant rejouer
+      }
+
+       m->temps_1 = getNext();
+
+    }
+
+    if (tour < 200) {
+      Mix_Resume(-1);
     }
     timerWait();
 
