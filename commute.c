@@ -1,10 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
-#include <SDL2_mixer/SDL_mixer.h>
+
 #include "engine.h"
 #include "graphics.h"
 #include "timer.h"
+
+#ifdef __APPLE__
+#include <SDL2_mixer/SDL_mixer.h>
+#elif __linux__
+#include <SDL2/SDL_mixer.h>
+#else
+#   error "Unknown compiler"
+#endif
 
 #define MAP "data/map0.bmp"
 //#define MAP "data/map2.bmp"
