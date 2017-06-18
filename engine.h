@@ -3,7 +3,7 @@
 #define NB_FLAMMES 25
 #define FLAMME_SIZE 64
 #define NB_TEMPS 20000
-#define LEVEL 20
+#define LEVEL 13
 #define DELTA_ENNEMIES 10
 
 typedef enum {
@@ -83,6 +83,7 @@ typedef struct {
 
   int t_klakson;
   float dist_klakson;
+  int boolKlakson;
 
   SDL_Point tigre_p;
   int dir_tigre;
@@ -97,6 +98,8 @@ void performedCar(map_t *m);
 int carArriveInDestination(map_t *m);
 void initGame(map_t *m);
 int checkBonus(map_t *m);
+
+int checkPoliceCatchCar(map_t *m, int t);
 
 int PointInRect(const SDL_Point *p, const SDL_Rect *r);
 void klakson(map_t *m);

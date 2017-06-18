@@ -45,14 +45,7 @@ const char *tilelevelnames[]={
   "data/10.bmp",
   "data/11.bmp",
   "data/12.bmp",
-  "data/13.bmp",
-  "data/14.bmp",
-  "data/15.bmp",
-  "data/16.bmp",
-  "data/17.bmp",
-  "data/18.bmp",
-  "data/19.bmp",
-  "data/20.bmp"
+  "data/13.bmp"
 };
 
 const char *tilepolicenames[]={
@@ -228,7 +221,8 @@ map_t *loadMap(char *filename) {
 
   m->voiture.angle = 0;
 
-  m->dist_klakson = 250.0;
+  m->dist_klakson = 444.4;
+  m->boolKlakson = 0;
 
   m->tigre_p.x = 450;
   m->tigre_p.y = 420;
@@ -301,13 +295,6 @@ void paint(SDL_Renderer *r,const map_t *m, int t) {
   rect_progression.w = (secondes*m->largeur) / TEMPS_MAX;
   SDL_RenderFillRect(r, &rect_progression);
 
-  SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
-  SDL_Rect rect_src;
-  rect_src.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
-  rect_src.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
-  rect_src.h = 40;
-  rect_src.w = 40;
-  //SDL_RenderFillRect(r, &rect_src);
 
   SDL_SetRenderDrawColor(r, 0, 255, 0, 255 );
   SDL_Rect rect_dest;
@@ -316,6 +303,24 @@ void paint(SDL_Renderer *r,const map_t *m, int t) {
   rect_dest.h = 40;
   rect_dest.w = 40;
   SDL_RenderFillRect(r, &rect_dest);
+
+
+  if(t == 0) {
+    SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
+    SDL_Rect rect_src;
+    rect_src.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
+    rect_src.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
+    rect_src.h = 40;
+    rect_src.w = 40;
+    SDL_RenderFillRect(r, &rect_src);
+    
+    SDL_Rect passp;
+    passp.x = m->largeur/2 - 200;
+    passp.y = m->hauteur/2 - 200;
+    passp.h = 400;
+    passp.w = 400;
+    SDL_RenderCopyEx(r, tile_level[m->level], NULL, &passp, 0, NULL, SDL_FLIP_NONE);
+  }
 
   SDL_Rect rect;
   rect.x = m->voiture.x;
@@ -359,15 +364,6 @@ void paint(SDL_Renderer *r,const map_t *m, int t) {
   car_x3.h = 4;
   car_x3.w = 4;
   SDL_RenderFillRect(r, &car_x3);
-
-  if(t == 0) {
-    SDL_Rect passp;
-    passp.x = m->largeur/2 - 200;
-    passp.y = m->hauteur/2 - 200;
-    passp.h = 400;
-    passp.w = 400;
-    SDL_RenderCopyEx(r, tile_level[m->level], NULL, &passp, 0, NULL, SDL_FLIP_NONE);
-  }
 
 
   /* Affiche le tout  */

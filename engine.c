@@ -28,7 +28,7 @@ int getEvent(map_t *m) {
         break;
       case SDLK_SPACE:
         if(m->temps - m->t_klakson > 200)
-          klakson(m);
+          m->boolKlakson = 1;
       case SDLK_p:
         m->pause = (m->pause == 0) ? 1 : 0; 
         break;
@@ -107,44 +107,29 @@ void loadCheckpoints(map_t *m) {
 /* A COMPLETER */
 void update(map_t *m) {
   performedCar(m);
+  if(m->boolKlakson) {
+    klakson(m);
+  }
+  checkPoliceCatchCar(m, m->temps);
 
   m->voiture.temps = m->temps;
   int t = m->temps;
   m->cars[m->level][m->voiture.temps] = m->voiture;
-
-
-  int center0_x = fabsf((int) m->voiture.x + m->voiture.largeur/2);
-  int center0_y = fabsf((int) m->voiture.y + m->voiture.hauteur/2);
-  int angle0 = (m->voiture.angle-90) * M_PI / 180.0;
-/*
-  int i,j;
-  for(i=0; i<m->level; i++) {
-    car_t voiture_e = m->cars[i][t];
-    
-    int center1_x = voiture_e.x + voiture_e.largeur/2;
-    int center1_y = voiture_e.y + voiture_e.hauteur/2;
-
-    int angle1 = (voiture_e.angle-90) * M_PI / 180.0;
-
-    if(check_collision(center0_x, center0_y, angle0, center1_x, center1_y, angle1)) {
-
-      printf("collision %d\n", t);
-      printf("%f - %f\n", m->cars[i][t].x, m->cars[i][t].y);
-      m->cars[i][t].x += 4 * cos(angle0) * m->voiture.vitesse; 
-      m->cars[i][t].y += 4 * sin(angle0) * m->voiture.vitesse; 
-      //m->cars[i][t].angle = voiture_e.angle;
-      printf("%f - %f\n", m->cars[i][t].x, m->cars[i][t].y);
-    }
-  }
-*/
 }
 
 void initGame(map_t *m) {
-
-
   // Chekpoints
+  int k, placeLibre;
   srand(time(NULL));
-  m->rang_checkpoints_src = rand() % m->nb_checkpoints;
+  do {
+    placeLibre = 1;
+    m->rang_checkpoints_src = rand() % m->nb_checkpoints;
+    for(k=0; k<m->level; k++) {
+      if(m->cars[k][1].checkpoints_src == m->rang_checkpoints_src) {
+        placeLibre = 0;
+      }
+    }
+  } while(!placeLibre);
 
   do {
     m->rang_checkpoints_dest = rand() % m->nb_checkpoints;
@@ -173,11 +158,10 @@ void initGame(map_t *m) {
 
   m->photo_laloux.x = m->largeur/2 - 40;
   m->photo_laloux.y = m->hauteur/2 - 40;
-  m->lalouxSize = 80;
 
 
   // Gestion de la police
-  int deltaCollision, delta = 150;
+  int deltaCollision, delta = 120;
   int i,j, ind;
   for(i=1;i<m->level; i++) {
     deltaCollision = 0;
@@ -185,13 +169,11 @@ void initGame(map_t *m) {
     if(m->boolPolice[i]) {
 
       for(j=0;j<NB_TEMPS; j++) {
-        car_t copy = m->cars[i][j];
-
         if(j < delta + 1) {
           m->police[i][j] = m->cars[i][0];
         } else {
-          if (copy.collision == NB_FLAMMES-1 && deltaCollision+NB_FLAMMES < delta && j>delta-deltaCollision) {
-            deltaCollision+=NB_FLAMMES;
+          if (m->cars[i][j].collision == NB_FLAMMES-1 && deltaCollision+NB_FLAMMES < delta && j>delta-deltaCollision) {
+            deltaCollision+=NB_FLAMMES-1;
           }
 
           ind = j - delta + deltaCollision;
@@ -222,17 +204,31 @@ void performedCar(map_t *m) {
   int collision = 0;
   if(m->getBonus != 1) {
     for(i=0; i<m->level; i++) {
+
       car_t voiture_e = m->cars[i][m->temps];
-      
       int center1_x = voiture_e.x + voiture_e.largeur/2;
       int center1_y = voiture_e.y + voiture_e.hauteur/2;
-
       int angle1 = (voiture_e.angle-90) * M_PI / 180.0;
-      int delta = 150;
-      if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1) && !m->voiture.collision && m->getBonus != 1) {
-        collision = 1;
-        m->voiture.collision = NB_FLAMMES;
-        m->boolPolice[m->level] = 1;
+
+      if(!m->voiture.collision && m->getBonus != 1) {
+        if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1)) {
+          collision = 1;
+          m->voiture.collision = NB_FLAMMES;
+          m->boolPolice[m->level] = 1;
+        }
+
+        if(m->boolPolice[i]) {
+          voiture_e = m->police[i][m->temps];
+          center1_x = voiture_e.x + voiture_e.largeur/2;
+          center1_y = voiture_e.y + voiture_e.hauteur/2;
+          angle1 = (voiture_e.angle-90) * M_PI / 180.0;
+
+          if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1)) {
+            collision = 1;
+            m->voiture.collision = NB_FLAMMES;
+            m->boolPolice[m->level] = 1;
+          }
+        }
       }
     }
   }
@@ -268,6 +264,8 @@ int y2 = (m->voiture.y + (m->voiture.hauteur)/2) + (m->voiture.hauteur)/2 * sin(
     //m->voiture.y -= 3*sin(rad) * m->voiture.vitesse;
     m->voiture.x = origine_x;
     m->voiture.y = origine_y;
+    m->voiture.collision--;
+
   }
   else if ((pixel2 > 0x000 && pixel2 < 0x999) || (pixel3 > 0x000 && pixel3 < 0x999)) { // mur
     m->voiture.x = origine_x;
@@ -279,10 +277,6 @@ int y2 = (m->voiture.y + (m->voiture.hauteur)/2) + (m->voiture.hauteur)/2 * sin(
   } else { // route
     m->voiture.x += cos(rad) * m->voiture.vitesse;
     m->voiture.y += sin(rad) * m->voiture.vitesse;
-  }
-
-  if(m->voiture.collision) {
-    m->voiture.collision--;
   }
 
 
@@ -335,7 +329,6 @@ int checkBonus(map_t *m) {
   car_center.y = center_y;
 
   if(PointInRect(&car_center, &rect)) {
-    printf("Bonus !!!!\n");
     m->getBonus = m->typeBonus;
   }
   return m->getBonus;
@@ -356,22 +349,19 @@ void klakson(map_t *m) {
 
   const float car_center_x = m->voiture.x + m->voiture.largeur/2;
   const float car_center_y = m->voiture.y + m->voiture.hauteur/2;
+  
+  m->t_klakson = m->temps; 
 
   float center_x, center_y;
   for(i = 0; i < m->level; i++) {
-    car_t voiture_e = m->cars[i][t];
+    car_t cars_e = m->cars[i][t];
+    center_x = m->cars[i][t].x + m->cars[i][t].largeur/2;
+    center_y = m->cars[i][t].y + m->cars[i][t].hauteur/2;
 
-    center_x = voiture_e.x + voiture_e.largeur/2;
-    center_y = voiture_e.y + voiture_e.hauteur/2;
-    
-    if(sqrt(pow((car_center_x-center_x),2) + pow((car_center_y-center_y),2.0) ) < m->dist_klakson) {
-      m->t_klakson = m->temps; 
+    if(sqrt(pow(car_center_x-center_x,2) + pow(car_center_y-center_y,2.0) ) < m->dist_klakson) {
 
-      for(j=t;j+delta<NB_TEMPS;j++) { // décalage
+      for(j=NB_TEMPS - delta;j>=t;j--) { // décalage
 
-        if(m->cars[i][t].temps == 0) {
-          break;
-        }
         m->cars[i][j+delta] = m->cars[i][j];
         m->cars[i][j+delta].temps += delta;
       }
@@ -380,8 +370,67 @@ void klakson(map_t *m) {
           m->cars[i][j] = m->cars[i][t];
           m->cars[i][j].temps += delta;
       }
+    }
+  }
+}
 
-      printf("DETECTED : %d : %d (%f px)\n", t, i, sqrt(pow((car_center_x-center_x),2) + pow((car_center_y-center_y),2.0) ));
+void resetCar(map_t *m, int i, int t) {
+
+  // voiture
+  m->cars[i][t].x = 0.0;
+  m->cars[i][t].y = 0.0;
+  m->cars[i][t].hauteur = 0.0;
+  m->cars[i][t].largeur = 0.0;
+  m->cars[i][t].angle = 0;
+
+  m->cars[i][t].vitesse = 0;
+  m->cars[i][t].temps = 0;
+
+  m->cars[i][t].collision = 0;
+
+  // police
+  m->police[i][t].x = 0.0;
+  m->police[i][t].y = 0.0;
+  m->police[i][t].hauteur = 0.0;
+  m->police[i][t].largeur = 0.0;
+  m->police[i][t].angle = 0;
+
+  m->police[i][t].vitesse = 0;
+  m->police[i][t].temps = 0;
+
+  m->police[i][t].collision = 0;
+  
+}
+
+int checkPoliceCatchCar(map_t *m, int t) {
+  int i, j;
+
+  car_t voiture_e, police_e;
+  int center_x, center_y, center1_y, center1_x;
+
+  double angle, angle1;
+  double rad, rad1;
+
+  for(i=0; i<m->level; i++) {
+    if(m->boolPolice[i]) {
+      voiture_e = m->cars[i][t];
+      center_x = fabsf((int) voiture_e.x + voiture_e.largeur/2);
+      center_y = fabsf((int) voiture_e.y + voiture_e.hauteur/2);
+      angle = voiture_e.angle-90;
+      rad = angle * M_PI / 180.0;
+
+      police_e = m->police[i][t];
+      center1_x = fabsf((int) police_e.x + police_e.largeur/2);
+      center1_y = fabsf((int) police_e.y + police_e.hauteur/2);
+      angle1 = police_e.angle-90;
+      rad = angle1 * M_PI / 180.0;
+
+      if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1)) {
+        for(j=0; j<NB_TEMPS;j++) {
+          resetCar(m, i, j);
+        }
+        m->boolPolice[j] = 0;
+      }
     }
   }
 }

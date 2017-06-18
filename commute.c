@@ -21,8 +21,7 @@
 
 int main(int argc,char *argv[]) {
 
-  if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) == -1) //Initialisation de l'API Mixer
-  {
+  if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) == -1) {
     printf("%s", Mix_GetError());
   }
 
@@ -44,10 +43,16 @@ int main(int argc,char *argv[]) {
   m->temps = 0;
   int tour = 0;
 
+  Mix_AllocateChannels(5);
 
-  Mix_Music *musique; //Création du pointeur de type Mix_Music
-  musique = Mix_LoadMUS("data/Oops.mp3"); //Chargement de la musique
-  Mix_PlayChannel(1, musique, 0);
+  Mix_Chunk *son1, *son2, *son3;
+  son1 = Mix_LoadWAV("data/FB.wav");
+  son2 = Mix_LoadWAV("data/epic_song.wav");
+  son3 = Mix_LoadWAV("data/klaxon.wav");
+  Mix_VolumeChunk(son1, MIX_MAX_VOLUME);
+  Mix_VolumeChunk(son2, MIX_MAX_VOLUME);
+  Mix_VolumeChunk(son3, MIX_MAX_VOLUME);
+  Mix_PlayChannel(1, son1, -1);
   while (!finished) {
 
 
@@ -56,28 +61,39 @@ int main(int argc,char *argv[]) {
     if(tour > 200) {
       m->temps++;
       if(m->temps == 0)
-        printf("1\n");
+        //printf("1\n");
       update(m);
 
+      if(m->boolKlakson == 1) {
+
+        Mix_PlayChannel(3, son3, 0);
+        m->boolKlakson = 0;
+      }
       if(m->getBonus == -1) {
         switch (checkBonus(m)) {
           case 0 :
             m->voiture.vitesse = m->voiture.vitesse*2; break;
+          case 1 :
+            m->voiture.vitesse++; break;
           case 2 :
-            printf("Play song\n"); break;
+            if (Mix_Playing(2) == 1) {
+              Mix_Pause(2);
+              Mix_PlayChannel(1, son1, -1);
+            } else if (Mix_Playing(1) == 1) {
+              Mix_Pause(1);
+              Mix_PlayChannel(2, son2, -1);
+            }
+
+            break;
           default: break;
         }
       }
         
-
-
       if(carArriveInDestination(m) == 1) {
         tour=0;
         m->temps=0;
         m->level++;
         initGame(m);
-
-        Mix_Pause(1);
       }
 
       int secondes = (getNext() - m->temps_1)/ 1000;
@@ -86,17 +102,11 @@ int main(int argc,char *argv[]) {
       }
 
     } else if (m->level == 0 && tour < 200) {
-      if(Mix_Paused(1) == 1) //Si le canal 2 est en pause
-      {
-        Mix_Resume(1); //Le canal 2 peut maintenant rejouer
-      }
-
        m->temps_1 = getNext();
-
     }
 
     if (tour < 200) {
-      Mix_Resume(-1);
+
     }
     timerWait();
 
@@ -106,7 +116,9 @@ int main(int argc,char *argv[]) {
     tour++;
   }
 
-  Mix_FreeMusic(musique);
+  Mix_FreeChunk(son1);
+  Mix_FreeChunk(son2);
+
   Mix_CloseAudio(); //Fermeture de l'API
   SDL_Quit();
 
