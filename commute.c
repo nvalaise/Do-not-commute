@@ -63,7 +63,6 @@ int main(int argc,char *argv[]) {
 
 
     play=getEvent(m);
-    printf("%d\n", play);
     if(play != old_state) {
       switch (play) {
         case 1: break;
@@ -77,7 +76,7 @@ int main(int argc,char *argv[]) {
 
     switch(m->type_menu) {
       case 1:
-
+        paintMenu(r,m);
         break;
       case 2:
         if(tour > 200) {
@@ -87,6 +86,7 @@ int main(int argc,char *argv[]) {
           //if(m->temps == 0)
             //printf("1\n");
           update(m);
+
 
           if(m->boolKlakson == 1) {
             Mix_PlayChannel(3, son3, 0);
@@ -106,12 +106,10 @@ int main(int argc,char *argv[]) {
                   Mix_Pause(1);
                   Mix_PlayChannel(2, son2, -1);
                 }
-
                 break;
               default: break;
             }
           }
-            
           if(carArriveInDestination(m) == 1) {
             tour=0;
             m->temps=0;
@@ -128,10 +126,11 @@ int main(int argc,char *argv[]) {
            m->temps_1 = getNext();
         }
 
+        paint(r,m);
+
         if (tour < 200) {
 
         }
-        timerWait();
 
         m->temps = (tour > 200) ? m->temps + 1 : 0;
         tour++;
@@ -141,7 +140,7 @@ int main(int argc,char *argv[]) {
         break;
     }
 
-    paint(r,m);
+    timerWait();
 
   }
 

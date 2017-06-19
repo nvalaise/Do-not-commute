@@ -274,12 +274,62 @@ SDL_Renderer *openWindow(int w,int h) {
   SDL_RenderSetLogicalSize(sdlRenderer, w, h);
   return sdlRenderer;
 }
+
+void paintMenu(SDL_Renderer *r, map_t *m) {
+
+  SDL_SetRenderDrawColor(r, 0, 0, 0, 255 );
+  SDL_RenderClear(r);
+
+  SDL_Rect rect_bg;
+  rect_bg.x = 0;
+  rect_bg.y = 10;
+  rect_bg.h = m->hauteur;
+  rect_bg.w = m->largeur;
+  SDL_RenderCopy(r,tile_background,NULL,&rect_bg);
+
+
+
+  SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
+  SDL_Rect boutton_play;
+  boutton_play.x = m->largeur/2 - 200;
+  boutton_play.y = m->hauteur/2 - 40 - 150;
+  boutton_play.h = 80;
+  boutton_play.w = 150;
+
+  int x, y;
+  SDL_GetMouseState(&x,&y);
+  SDL_Point mouse;
+  mouse.x = x;
+  mouse.y = y;
+
+  if(PointInRect(&mouse, &boutton_play)) {
+    SDL_RenderCopy(r,tile_button,&rect_button[0],&boutton_play);
+  } else {
+    SDL_RenderCopy(r,tile_button,&rect_button[1],&boutton_play);
+  }
+
+
+  SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
+  SDL_Rect boutton_quit;
+  boutton_quit.x = m->largeur/2 + 50;
+  boutton_quit.y = m->hauteur/2 - 40 - 150;
+  boutton_quit.h = 80;
+  boutton_quit.w = 150;
+
+  if(PointInRect(&mouse, &boutton_quit)) {
+    SDL_RenderCopy(r,tile_button,&rect_button[0],&boutton_quit);
+  } else {
+    SDL_RenderCopy(r,tile_button,&rect_button[1],&boutton_quit);
+  }
+  SDL_RenderPresent(r);
+}
+
 /* Redessine la carte, les joueurs, les effets, ...
 */
-void paint(SDL_Renderer *r,const map_t *m) {
+void paint(SDL_Renderer *r, map_t *m) {
   int t = m->temps;
   /* Fait un ecran noir */
-  SDL_SetRenderDrawColor(r, 0, 0, 255, 255 );
+  SDL_SetRenderDrawColor(r, 0, 0, 0, 255 );
   SDL_RenderClear(r);
   /* Definir ici le contenu graphique de la fenetre.
    */
@@ -291,44 +341,7 @@ void paint(SDL_Renderer *r,const map_t *m) {
   rect_bg.w = m->largeur;
   SDL_RenderCopy(r,tile_background,NULL,&rect_bg);
 
-  switch (m->type_menu) {
-    case 1:
 
-      SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
-      SDL_Rect boutton_play;
-      boutton_play.x = m->largeur/2 - 200;
-      boutton_play.y = m->hauteur/2 - 40 - 150;
-      boutton_play.h = 80;
-      boutton_play.w = 150;
-
-      int x, y;
-      SDL_GetMouseState(&x,&y);
-      SDL_Point mouse;
-      mouse.x = x;
-      mouse.y = y;
-
-      if(PointInRect(&mouse, &boutton_play)) {
-        SDL_RenderCopy(r,tile_button,&rect_button[0],&boutton_play);
-      } else {
-        SDL_RenderCopy(r,tile_button,&rect_button[1],&boutton_play);
-      }
-
-
-      SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
-      SDL_Rect boutton_quit;
-      boutton_quit.x = m->largeur/2 + 50;
-      boutton_quit.y = m->hauteur/2 - 40 - 150;
-      boutton_quit.h = 80;
-      boutton_quit.w = 150;
-
-      if(PointInRect(&mouse, &boutton_quit)) {
-        SDL_RenderCopy(r,tile_button,&rect_button[0],&boutton_quit);
-      } else {
-        SDL_RenderCopy(r,tile_button,&rect_button[1],&boutton_quit);
-      }
-
-      break;
-    case 2:
       paintTigres(r, m, t);
       
       switch(m->getBonus) {
@@ -428,10 +441,6 @@ void paint(SDL_Renderer *r,const map_t *m) {
       car_x3.h = 4;
       car_x3.w = 4;
       SDL_RenderFillRect(r, &car_x3);
-      break;
-    default:
-      break;
-  }
 
   /* Affiche le tout  */
   SDL_RenderPresent(r);
