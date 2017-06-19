@@ -4,7 +4,7 @@ void loadTilesLevel(SDL_Renderer *s);
 void loadTilesBonus(SDL_Renderer *s);
 map_t *loadMap(char *filename);
 SDL_Renderer *openWindow(int w,int h);
-void paint(SDL_Renderer *s,const map_t *m, int t);
+void paint(SDL_Renderer *s,const map_t *m);
 void paintEnemies(SDL_Renderer *s,const map_t *m, int t);
 void paintPolice(SDL_Renderer *s,const map_t *m, int t);
 void paintFlammes(SDL_Renderer *r,const car_t car);

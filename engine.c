@@ -12,14 +12,15 @@
 */
 int getEvent(map_t *m) {
   SDL_Event event;
+
   /* Ecoute les événements qui sont arrivés */
   while( SDL_PollEvent(&event) ){
     /* On a fermé la fenetre -> quitter le jeu */
-    if (event.type==SDL_QUIT) return 1;
+    if (event.type==SDL_QUIT) return 0;
     /* On a appuyé sur une touche */
     if (event.type==SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
-      case SDLK_ESCAPE:  return 1;
+      case SDLK_ESCAPE:  return 0;
       case SDLK_LEFT:
         m->voiture.angle -= 12;
         break;
@@ -32,12 +33,44 @@ int getEvent(map_t *m) {
       case SDLK_p:
         m->pause = (m->pause == 0) ? 1 : 0; 
         break;
+
       default:
         break;
       }
     }
+
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+      int x, y;
+      SDL_Point mouse;
+      SDL_Rect boutton_play, boutton_quit;
+
+      SDL_GetMouseState(&x,&y);
+      mouse.x = x;
+      mouse.y = y;
+
+      boutton_play.x = m->largeur/2 - 200;
+      boutton_play.y = m->hauteur/2 - 40 - 150;
+      boutton_play.h = 80;
+      boutton_play.w = 150;
+
+      boutton_quit.x = m->largeur/2 + 50;
+      boutton_quit.y = m->hauteur/2 - 40 - 150;
+      boutton_quit.h = 80;
+      boutton_quit.w = 150;
+
+      if(PointInRect(&mouse, &boutton_play)) {
+        m->type_menu = 2;
+        return 2;
+      }
+
+      if(PointInRect(&mouse, &boutton_quit)) {
+        m->type_menu = 0;
+        return 0;
+      }
+
+    }
   }
-  return 0;
+  return 1;
 }
 
 void loadCheckpoints(map_t *m) {
@@ -100,7 +133,6 @@ void loadCheckpoints(map_t *m) {
     }
   }
 
-  printf("%d Bonus\n", m->nb_bonus);
   m->pause = 0;
 }
 
@@ -113,8 +145,7 @@ void update(map_t *m) {
   checkPoliceCatchCar(m, m->temps);
 
   m->voiture.temps = m->temps;
-  int t = m->temps;
-  m->cars[m->level][m->voiture.temps] = m->voiture;
+  m->cars[m->level][m->temps] = m->voiture;
 }
 
 void initGame(map_t *m) {
@@ -135,19 +166,18 @@ void initGame(map_t *m) {
     m->rang_checkpoints_dest = rand() % m->nb_checkpoints;
   } while(m->rang_checkpoints_src == m->rang_checkpoints_dest);
 
+  srand(time(NULL));
+  int rand_type = rand() % 9;
 
+  // Type de la voiture
+  m->voiture = setCarType((type_t)rand_type);
   m->voiture.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
   m->voiture.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
 
   m->voiture.checkpoints_src = m->rang_checkpoints_src;
   m->voiture.checkpoints_dest = m->rang_checkpoints_dest;
 
-  srand(time(NULL));
-  int rand_type = rand() % 9;
 
-  // Type de la voiture
-  m->voiture.type = (type_t)rand_type;
-  m->voiture.vitesse = 2;
 
   // Type du Bonus
   srand(time(NULL));
@@ -155,10 +185,10 @@ void initGame(map_t *m) {
   m->typeBonus = rand() % 4;
 
   m->getBonus = -1;
-
-  m->photo_laloux.x = m->largeur/2 - 40;
-  m->photo_laloux.y = m->hauteur/2 - 40;
-
+  
+  m->lalouxSize = 6;
+  m->photo_laloux.x = m->largeur/2 - 3;
+  m->photo_laloux.y = m->hauteur/2 - 3;
 
   // Gestion de la police
   int deltaCollision, delta = 120;
@@ -181,6 +211,70 @@ void initGame(map_t *m) {
       }
     }
   }
+}
+
+car_t setCarType(type_t type) {
+  car_t new_car;
+
+  switch(type) {
+    case AMBULANCE:
+      new_car.vitesse = 2.0;
+      new_car.type = type;
+      new_car.largeur = SIZE + 3;
+      new_car.hauteur = SIZE + 6;
+      break;
+    case MINITRUCK:
+      new_car.vitesse = 1.5;
+      new_car.type = type;
+      new_car.largeur = SIZE + 2;
+      new_car.hauteur = SIZE + 4;  
+      break;
+    case TAXI:
+      new_car.vitesse = 2.0;
+      new_car.type = type;
+      new_car.largeur = SIZE + 4;
+      new_car.hauteur = SIZE + 4;
+      break;
+    case SPORT:
+      new_car.vitesse = 3.0;
+      new_car.type = type;
+      new_car.largeur = SIZE;
+      new_car.hauteur = SIZE;
+      break;
+    case MINIVAN:
+      new_car.vitesse = 1.0;
+      new_car.type = type;
+      new_car.largeur = SIZE + 2;
+      new_car.hauteur = SIZE + 8;
+      break;
+    case TRUCK:
+      new_car.vitesse = 1.0;
+      new_car.type = type;
+      new_car.largeur = SIZE + 8;
+      new_car.hauteur = SIZE + 8;
+      break;
+    case CAR:
+      new_car.vitesse = 2.0;
+      new_car.type = type;
+      new_car.largeur = SIZE;
+      new_car.hauteur = SIZE;
+      break;
+    case POLICE:
+      new_car.vitesse = 2.5;
+      new_car.type = type;
+      new_car.largeur = SIZE;
+      new_car.hauteur = SIZE;
+      break;
+    case VIPER:
+      new_car.vitesse = 3.5;
+      new_car.type = type;
+      new_car.largeur = SIZE - 4;
+      new_car.hauteur = SIZE - 4;
+      break;
+    default: break;
+  }
+
+  return new_car;
 }
 
 void performedCar(map_t *m) {

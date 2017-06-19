@@ -46,6 +46,7 @@ typedef struct {
 } car_t;
 
 typedef struct {
+  int type_menu;
   int pause;
 
   int hauteur,largeur; //dimension de l'écran
@@ -87,6 +88,8 @@ typedef struct {
 
   SDL_Point tigre_p;
   int dir_tigre;
+
+
 } map_t;
 
 #define SIZE 32
@@ -98,6 +101,8 @@ void performedCar(map_t *m);
 int carArriveInDestination(map_t *m);
 void initGame(map_t *m);
 int checkBonus(map_t *m);
+
+car_t setCarType(type_t type);
 
 int checkPoliceCatchCar(map_t *m, int t);
 

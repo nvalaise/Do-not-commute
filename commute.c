@@ -26,7 +26,7 @@ int main(int argc,char *argv[]) {
   }
 
   map_t *m;
-  int finished=0;
+  int play=1;
 
   m=loadMap(MAP);
   
@@ -45,74 +45,104 @@ int main(int argc,char *argv[]) {
 
   Mix_AllocateChannels(5);
 
-  Mix_Chunk *son1, *son2, *son3;
+  Mix_Chunk *son1, *son2, *son3, *son4;
   son1 = Mix_LoadWAV("data/FB.wav");
   son2 = Mix_LoadWAV("data/epic_song.wav");
   son3 = Mix_LoadWAV("data/klaxon.wav");
+  son4 = Mix_LoadWAV("data/FB_generic.wav");
+
   Mix_VolumeChunk(son1, MIX_MAX_VOLUME);
   Mix_VolumeChunk(son2, MIX_MAX_VOLUME);
   Mix_VolumeChunk(son3, MIX_MAX_VOLUME);
-  Mix_PlayChannel(1, son1, -1);
-  while (!finished) {
+  Mix_VolumeChunk(son4, MIX_MAX_VOLUME);
+
+  Mix_PlayChannel(4, son4, 0);
+
+  int old_state = 1;
+  while (play) {
 
 
-    finished=getEvent(m);
-
-    if(tour > 200) {
-      m->temps++;
-      //if(m->temps == 0)
-        //printf("1\n");
-      update(m);
-
-      if(m->boolKlakson == 1) {
-        Mix_PlayChannel(3, son3, 0);
-        m->boolKlakson = 0;
+    play=getEvent(m);
+    printf("%d\n", play);
+    if(play != old_state) {
+      switch (play) {
+        case 1: break;
+        case 2: 
+          Mix_HaltChannel(4);
+          Mix_PlayChannel(1, son1, -1);
+          break;
       }
-      if(m->getBonus == -1) {
-        switch (checkBonus(m)) {
-          case 0 :
-            m->voiture.vitesse = m->voiture.vitesse*2; break;
-          case 1 :
-            m->voiture.vitesse++; break;
-          case 2 :
-            if (Mix_Playing(2) == 1) {
-              Mix_Pause(2);
-              Mix_PlayChannel(1, son1, -1);
-            } else if (Mix_Playing(1) == 1) {
-              Mix_Pause(1);
-              Mix_PlayChannel(2, son2, -1);
+      old_state = play;
+    }
+
+    switch(m->type_menu) {
+      case 1:
+
+        break;
+      case 2:
+        if(tour > 200) {
+          timerJeuxWait();
+
+          m->temps++;
+          //if(m->temps == 0)
+            //printf("1\n");
+          update(m);
+
+          if(m->boolKlakson == 1) {
+            Mix_PlayChannel(3, son3, 0);
+            m->boolKlakson = 0;
+          }
+          if(m->getBonus == -1) {
+            switch (checkBonus(m)) {
+              case 0 :
+                m->voiture.vitesse = m->voiture.vitesse*2; break;
+              case 1 :
+                m->voiture.vitesse++; break;
+              case 2 :
+                if (Mix_Playing(2) == 1) {
+                  Mix_Pause(2);
+                  Mix_PlayChannel(1, son1, -1);
+                } else if (Mix_Playing(1) == 1) {
+                  Mix_Pause(1);
+                  Mix_PlayChannel(2, son2, -1);
+                }
+
+                break;
+              default: break;
             }
+          }
+            
+          if(carArriveInDestination(m) == 1) {
+            tour=0;
+            m->temps=0;
+            m->level++;
+            initGame(m);
+          }
 
-            break;
-          default: break;
+          int secondes = (getNext() - m->temps_1)/ 1000;
+          if (secondes > TEMPS_MAX) {
+            //exit(0);
+          }
+
+        } else if (m->level == 0 && tour < 200) {
+           m->temps_1 = getNext();
         }
-      }
-        
-      if(carArriveInDestination(m) == 1) {
-        tour=0;
-        m->temps=0;
-        m->level++;
-        initGame(m);
-      }
 
-      int secondes = (getNext() - m->temps_1)/ 1000;
-      if (secondes > TEMPS_MAX) {
-        //exit(0);
-      }
+        if (tour < 200) {
 
-    } else if (m->level == 0 && tour < 200) {
-       m->temps_1 = getNext();
+        }
+        timerWait();
+
+        m->temps = (tour > 200) ? m->temps + 1 : 0;
+        tour++;
+        break;
+
+      default:
+        break;
     }
 
-    if (tour < 200) {
+    paint(r,m);
 
-    }
-    timerWait();
-
-    paint(r,m,m->temps);
-
-    m->temps = (tour > 200) ? m->temps + 1 : 0;
-    tour++;
   }
 
   Mix_FreeChunk(son1);
