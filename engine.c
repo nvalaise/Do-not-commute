@@ -119,7 +119,7 @@ void update(map_t *m) {
 
 void initGame(map_t *m) {
   // Chekpoints
-  int k, placeLibre;
+  int i,j,k, ind, placeLibre;
   srand(time(NULL));
   do {
     placeLibre = 1;
@@ -162,7 +162,6 @@ void initGame(map_t *m) {
 
   // Gestion de la police
   int deltaCollision, delta = 120;
-  int i,j, ind;
   for(i=1;i<m->level; i++) {
     deltaCollision = 0;
 

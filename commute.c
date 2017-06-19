@@ -60,12 +60,11 @@ int main(int argc,char *argv[]) {
 
     if(tour > 200) {
       m->temps++;
-      if(m->temps == 0)
+      //if(m->temps == 0)
         //printf("1\n");
       update(m);
 
       if(m->boolKlakson == 1) {
-
         Mix_PlayChannel(3, son3, 0);
         m->boolKlakson = 0;
       }
