@@ -1,5 +1,5 @@
 #define M_PI 3.14159265358979323846
-#define TEMPS_MAX 90
+#define TEMPS_MAX 30
 #define NB_FLAMMES 25
 #define FLAMME_SIZE 64
 #define NB_TEMPS 20000
@@ -79,8 +79,6 @@ typedef struct {
   car_t police[LEVEL][NB_TEMPS];
 
   int temps;
-  int temps_1; // horloge considérée comme constante, temps du décalage avec le temps d'initialisation de la position (où le joueur peut s'orienter)
-
 
   int t_klakson;
   float dist_klakson;
@@ -103,7 +101,7 @@ void initGame(map_t *m);
 int checkBonus(map_t *m);
 
 car_t setCarType(type_t type);
-
+void reinitCars(map_t *m);
 int checkPoliceCatchCar(map_t *m, int t);
 
 int PointInRect(const SDL_Point *p, const SDL_Rect *r);

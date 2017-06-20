@@ -24,6 +24,10 @@ void timerJeuxWait() {
   timerJeux+=TICK_INTERVAL;
 }
 
+void reInitTimer() {
+	timerJeux = 0;
+}
+
 Uint32 getNext(){
 	return next;
 }

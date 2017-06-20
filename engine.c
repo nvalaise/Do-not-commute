@@ -173,11 +173,11 @@ void initGame(map_t *m) {
   m->voiture = setCarType((type_t)rand_type);
   m->voiture.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
   m->voiture.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
+  m->voiture.angle = 0;
+  m->boolKlakson = 0;
 
   m->voiture.checkpoints_src = m->rang_checkpoints_src;
   m->voiture.checkpoints_dest = m->rang_checkpoints_dest;
-
-
 
   // Type du Bonus
   srand(time(NULL));
@@ -242,7 +242,7 @@ car_t setCarType(type_t type) {
       new_car.hauteur = SIZE;
       break;
     case MINIVAN:
-      new_car.vitesse = 1.0;
+      new_car.vitesse = 1.5;
       new_car.type = type;
       new_car.largeur = SIZE + 2;
       new_car.hauteur = SIZE + 8;
@@ -254,7 +254,7 @@ car_t setCarType(type_t type) {
       new_car.hauteur = SIZE + 8;
       break;
     case CAR:
-      new_car.vitesse = 2.0;
+      new_car.vitesse = 2.5;
       new_car.type = type;
       new_car.largeur = SIZE;
       new_car.hauteur = SIZE;
@@ -493,6 +493,15 @@ void resetCar(map_t *m, int i, int t) {
 
   m->police[i][t].collision = 0;
   
+}
+
+void reinitCars(map_t *m) {
+  int i, j;
+  for(i=0; i<LEVEL; i++) {
+    for(j=0; j<NB_TEMPS; j++) {
+      resetCar(m,i,j);
+    }
+  }
 }
 
 int checkPoliceCatchCar(map_t *m, int t) {

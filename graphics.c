@@ -2,6 +2,14 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 
+#ifdef __APPLE__
+#include <SDL2_ttf/SDL_ttf.h>
+#elif __linux__
+#include <SDL2/SDL_ttf.h>
+#else
+#   error "Unknown compiler"
+#endif
+
 #include "engine.h"
 #include "graphics.h"
 #include "timer.h"
@@ -15,11 +23,17 @@ SDL_Texture *tile_level[LEVEL];
 SDL_Texture *tile_police[3];
 SDL_Texture *tile_bonus[4];
 
+SDL_Texture *tile_pereFouras;
+
 SDL_Rect rect_button[2];
 SDL_Texture *tile_button;
 
 SDL_Rect rect_tigres[16];
 SDL_Texture *tile_tigres;
+
+TTF_Font *font_120;
+TTF_Font *font_60;
+
 /*
    Doit etre avec le meme ordre que l'enum dans le .h
 */
@@ -120,6 +134,14 @@ void loadTiles(SDL_Renderer *s, const map_t *m) {
 
     SDL_FreeSurface(loadedImage1);
   } else fprintf(stderr,"Missing file %s:%s\n","data/buttons.bmp",SDL_GetError());
+
+  SDL_Surface *loadedImage2=SDL_LoadBMP("data/pere-fouras.bmp");
+  Uint32 colorkey2 = SDL_MapRGB(loadedImage2->format,0xff,0xff,0xff);
+  SDL_SetColorKey(loadedImage2,SDL_TRUE,colorkey2);
+
+  tile_pereFouras = SDL_CreateTextureFromSurface(s, loadedImage2 );
+  SDL_FreeSurface(loadedImage2);
+
 }
 
 void loadTilesLevel(SDL_Renderer *s) {
@@ -238,16 +260,12 @@ map_t *loadMap(char *filename) {
   m->background = SDL_LoadBMP(filename);
   m->hauteur = m->background->h;
   m->largeur = m->background->w;
-  m->level = 0;
+  
+  font_120 = TTF_OpenFont("data/font.ttf", 120);
+  font_60 = TTF_OpenFont("data/font.ttf", 60);
+
   m->type_menu = 1;
-
-  m->voiture.hauteur = SIZE;
-  m->voiture.largeur = SIZE;
-
-  m->voiture.angle = 0;
-
   m->dist_klakson = 444.4;
-  m->boolKlakson = 0;
 
   m->tigre_p.x = 450;
   m->tigre_p.y = 420;
@@ -282,7 +300,7 @@ void paintMenu(SDL_Renderer *r, map_t *m) {
 
   SDL_Rect rect_bg;
   rect_bg.x = 0;
-  rect_bg.y = 10;
+  rect_bg.y = 0;
   rect_bg.h = m->hauteur;
   rect_bg.w = m->largeur;
   SDL_RenderCopy(r,tile_background,NULL,&rect_bg);
@@ -321,7 +339,38 @@ void paintMenu(SDL_Renderer *r, map_t *m) {
   } else {
     SDL_RenderCopy(r,tile_button,&rect_button[1],&boutton_quit);
   }
+
+  SDL_Rect rect_pf;
+  rect_pf.x = m->largeur - 624;
+  rect_pf.y = m->hauteur - 579;
+  rect_pf.h = 579;
+  rect_pf.w = 624;
+  SDL_RenderCopyEx(r, tile_pereFouras, NULL, &rect_pf, 0, NULL, SDL_FLIP_NONE);
+
+  SDL_Color couleurNoire = {0, 0, 0};
+
+  boutton_play.x += 10;
+  boutton_play.y += 10;
+  boutton_play.w -= 20;
+  boutton_play.h -= 20;
+  SDL_Surface *texte_play = TTF_RenderText_Solid(font_120, "Play", couleurNoire);
+  SDL_Texture *texture_texte_play = SDL_CreateTextureFromSurface(r, texte_play);
+  SDL_RenderCopy(r, texture_texte_play, NULL, &boutton_play);
+
+  boutton_quit.x += 10;
+  boutton_quit.y += 10;
+  boutton_quit.w -= 20;
+  boutton_quit.h -= 20;
+  SDL_Surface *texte_quit = TTF_RenderText_Solid(font_120, "Quit", couleurNoire);
+  SDL_Texture *texture_texte_quit = SDL_CreateTextureFromSurface(r, texte_quit);
+  SDL_RenderCopy(r, texture_texte_quit, NULL, &boutton_quit);
+
   SDL_RenderPresent(r);
+
+  if(m->type_menu == 0) {
+    TTF_CloseFont(font_60);
+    TTF_CloseFont(font_120);   
+  }
 }
 
 /* Redessine la carte, les joueurs, les effets, ...
@@ -341,109 +390,143 @@ void paint(SDL_Renderer *r, map_t *m) {
   rect_bg.w = m->largeur;
   SDL_RenderCopy(r,tile_background,NULL,&rect_bg);
 
+  SDL_Color couleurNoire = {0, 0, 0};
+  SDL_Rect rect_text;
+  rect_text.x=10;
+  rect_text.y=10;
+  rect_text.w=150;
+  rect_text.h=30;
+  char niveau[20];
+  sprintf(niveau, "Niveau : %d", m->level+1);
+  SDL_Surface *texte_niveau = TTF_RenderText_Solid(font_60, niveau, couleurNoire);
+  SDL_Texture *texture_texte_niveau = SDL_CreateTextureFromSurface(r, texte_niveau);
+  SDL_RenderCopy(r, texture_texte_niveau, NULL, &rect_text);
 
-      paintTigres(r, m, t);
-      
-      switch(m->getBonus) {
-        case -1:
-          paintBonus(r, m); break;
-        case 3:
-          showLaloux(r, m); break;
-        default: break;
-      }
+  rect_text.x=10;
+  rect_text.y=45;
+  rect_text.w=250;
+  rect_text.h=30;
+  char temps[20];
+  sprintf(temps, "Temps restant : %d", TEMPS_MAX - (getTimerJeux() / 1000));
+  SDL_Surface *texte_tempsRestant = TTF_RenderText_Solid(font_60, temps, couleurNoire);
+  SDL_Texture *texture_texte_tempsRestant = SDL_CreateTextureFromSurface(r, texte_tempsRestant);
+  SDL_RenderCopy(r, texture_texte_tempsRestant, NULL, &rect_text);
+
+  rect_text.x=10;
+  rect_text.y=80;
+  rect_text.w=100;
+  rect_text.h=30;
+  SDL_Surface *texte_score = TTF_RenderText_Solid(font_60, "Score :", couleurNoire);
+  SDL_Texture *texture_texte_score = SDL_CreateTextureFromSurface(r, texte_score);
+  SDL_RenderCopy(r, texture_texte_score, NULL, &rect_text);
+
+  paintTigres(r, m, t);
+  
+  switch(m->getBonus) {
+    case -1:
+      paintBonus(r, m); break;
+    case 3:
+      showLaloux(r, m); break;
+    default: break;
+  }
 
 
-      SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
+  SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
 
-      SDL_Rect rect_progression_bg;
-      rect_progression_bg.x = 0;
-      rect_progression_bg.y = 0;
-      rect_progression_bg.h = 10;
-      rect_progression_bg.w = m->largeur;
-      SDL_RenderFillRect(r, &rect_progression_bg);
-
-
-      int secondes = (getTimerJeux() - m->temps_1)/ 1000;
-      SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
-      SDL_Rect rect_progression;
-      rect_progression.x = 0;
-      rect_progression.y = 0;
-      rect_progression.h = 10;
-      rect_progression.w = (secondes*m->largeur) / TEMPS_MAX;
-      SDL_RenderFillRect(r, &rect_progression);
+  SDL_Rect rect_progression_bg;
+  rect_progression_bg.x = 0;
+  rect_progression_bg.y = 0;
+  rect_progression_bg.h = 10;
+  rect_progression_bg.w = m->largeur;
+  SDL_RenderFillRect(r, &rect_progression_bg);
 
 
-      SDL_SetRenderDrawColor(r, 0, 255, 0, 255 );
-      SDL_Rect rect_dest;
-      rect_dest.x = m->checkpoints[m->rang_checkpoints_dest][0]-20;
-      rect_dest.y = m->checkpoints[m->rang_checkpoints_dest][1]-20;
-      rect_dest.h = 40;
-      rect_dest.w = 40;
-      SDL_RenderFillRect(r, &rect_dest);
+  int secondes = getTimerJeux()/ 1000;
+  SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
+  SDL_Rect rect_progression;
+  rect_progression.x = 0;
+  rect_progression.y = 0;
+  rect_progression.h = 10;
+  rect_progression.w = (secondes*m->largeur) / TEMPS_MAX;
+  SDL_RenderFillRect(r, &rect_progression);
 
 
-      if(t == 0) {
-        SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
-        SDL_Rect rect_src;
-        rect_src.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
-        rect_src.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
-        rect_src.h = 40;
-        rect_src.w = 40;
-        SDL_RenderFillRect(r, &rect_src);
-        
-        SDL_Rect passp;
-        passp.x = m->largeur/2 - 200;
-        passp.y = m->hauteur/2 - 200;
-        passp.h = 400;
-        passp.w = 400;
-        SDL_RenderCopyEx(r, tile_level[m->level], NULL, &passp, 0, NULL, SDL_FLIP_NONE);
-      }
+  SDL_SetRenderDrawColor(r, 0, 255, 0, 255 );
+  SDL_Rect rect_dest;
+  rect_dest.x = m->checkpoints[m->rang_checkpoints_dest][0]-20;
+  rect_dest.y = m->checkpoints[m->rang_checkpoints_dest][1]-20;
+  rect_dest.h = 40;
+  rect_dest.w = 40;
+  SDL_RenderFillRect(r, &rect_dest);
 
-      SDL_Rect rect;
-      rect.x = m->voiture.x;
-      rect.y = m->voiture.y;
-      rect.h = m->voiture.hauteur;
-      rect.w = m->voiture.largeur;
-      SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
-      
-      if(m->getBonus == 1) {
-        SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
-        SDL_RenderDrawRect(r, &rect);
-      }
 
-      paintFlammes(r,m->voiture);
-      paintEnemies(r,m,t);
-      paintPolice(r,m,t);
+  if(t == 0) {
+    SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
+    SDL_Rect rect_src;
+    rect_src.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
+    rect_src.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
+    rect_src.h = 40;
+    rect_src.w = 40;
+    SDL_RenderFillRect(r, &rect_src);
+    
+    SDL_Rect passp;
+    passp.x = m->largeur/2 - 200;
+    passp.y = m->hauteur/2 - 200;
+    passp.h = 400;
+    passp.w = 400;
+    SDL_RenderCopyEx(r, tile_level[m->level], NULL, &passp, 0, NULL, SDL_FLIP_NONE);
+  }
 
-      double angle = m->voiture.angle-90;
-      double rad = angle * M_PI / 180.0;
+  SDL_Rect rect;
+  rect.x = m->voiture.x;
+  rect.y = m->voiture.y;
+  rect.h = m->voiture.hauteur;
+  rect.w = m->voiture.largeur;
+  SDL_RenderCopyEx(r, tile[m->voiture.type], NULL, &rect, m->voiture.angle, NULL, SDL_FLIP_NONE);
+  
+  if(m->getBonus == 1) {
+    SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
+    SDL_RenderDrawRect(r, &rect);
+  }
 
-      SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
-      SDL_Rect car_x1;
-      car_x1.x = m->voiture.x-5; //fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(-rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
-      car_x1.y = m->voiture.y-5; //fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
-      car_x1.h = 10;
-      car_x1.w = 10;
-      //SDL_RenderFillRect(r, &car_x1);
+  paintFlammes(r,m->voiture);
+  paintEnemies(r,m,t);
+  paintPolice(r,m,t);
 
-      SDL_SetRenderDrawColor(r, 0, 255, 255, 255 );
-      SDL_Rect car_x2;
-      car_x2.x = (m->voiture.x + (m->voiture.largeur)/2) + (m->voiture.largeur)/2 * cos(rad + M_PI/4) -2; //fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(-rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
-      car_x2.y = (m->voiture.y + (m->voiture.hauteur)/2) + (m->voiture.hauteur)/2 * sin(rad + M_PI/4) -2; //fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
-      car_x2.h = 4;
-      car_x2.w = 4;
-      SDL_RenderFillRect(r, &car_x2);
+  double angle = m->voiture.angle-90;
+  double rad = angle * M_PI / 180.0;
 
-      SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
-      SDL_Rect car_x3;
-      car_x3.x = (m->voiture.x + (m->voiture.largeur)/2) + (m->voiture.largeur)/2 * cos(rad - M_PI/4) -2; //fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(-rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
-      car_x3.y = (m->voiture.y + (m->voiture.hauteur)/2) + (m->voiture.hauteur)/2 * sin(rad - M_PI/4) -2; //fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
-      car_x3.h = 4;
-      car_x3.w = 4;
-      SDL_RenderFillRect(r, &car_x3);
+  SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
+  SDL_Rect car_x1;
+  car_x1.x = m->voiture.x-5; //fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(-rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
+  car_x1.y = m->voiture.y-5; //fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
+  car_x1.h = 10;
+  car_x1.w = 10;
+  //SDL_RenderFillRect(r, &car_x1);
+
+  SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
+  SDL_Rect car_x2;
+  car_x2.x = (m->voiture.x + (m->voiture.largeur)/2) + (m->voiture.largeur)/2 * cos(rad + M_PI/4) -2; //fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(-rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
+  car_x2.y = (m->voiture.y + (m->voiture.hauteur)/2) + (m->voiture.hauteur)/2 * sin(rad + M_PI/4) -2; //fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
+  car_x2.h = 4;
+  car_x2.w = 4;
+  SDL_RenderFillRect(r, &car_x2);
+
+  //SDL_SetRenderDrawColor(r, 255, 0, 255, 255 );
+  SDL_Rect car_x3;
+  car_x3.x = (m->voiture.x + (m->voiture.largeur)/2) + (m->voiture.largeur)/2 * cos(rad - M_PI/4) -2; //fabsf((int) m->voiture.x + m->voiture.largeur/2) + (cos(-rad) * m->voiture.largeur)/2 - 5; // + cos(rad) + (1-sin(rad))
+  car_x3.y = (m->voiture.y + (m->voiture.hauteur)/2) + (m->voiture.hauteur)/2 * sin(rad - M_PI/4) -2; //fabsf((int) m->voiture.y + m->voiture.hauteur/2) + (sin(rad) * m->voiture.hauteur)/2 - 5; //+ sin(rad) + (1-cos(rad))
+  car_x3.h = 4;
+  car_x3.w = 4;
+  SDL_RenderFillRect(r, &car_x3);
 
   /* Affiche le tout  */
   SDL_RenderPresent(r);
+
+  if(m->type_menu == 0) {
+    TTF_CloseFont(font_60);
+    TTF_CloseFont(font_120);   
+  }
 }
 
 void paintEnemies(SDL_Renderer *r,const map_t *m, int t) {
@@ -458,7 +541,7 @@ void paintEnemies(SDL_Renderer *r,const map_t *m, int t) {
     rect.w = voiture_e.largeur;
     SDL_RenderCopyEx(r, tile[voiture_e.type], NULL, &rect, voiture_e.angle, NULL, SDL_FLIP_NONE);
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255 );
-    SDL_RenderDrawRect(r, &rect);
+    //SDL_RenderDrawRect(r, &rect);
 
     paintFlammes(r,voiture_e);
   }
@@ -475,7 +558,7 @@ void paintPolice(SDL_Renderer *r,const map_t *m, int t) {
     rect.w = voiture_e.largeur;
     SDL_RenderCopyEx(r, tile_police[t%3], NULL, &rect, voiture_e.angle, NULL, SDL_FLIP_NONE);
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255 );
-    SDL_RenderDrawRect(r, &rect);
+    //SDL_RenderDrawRect(r, &rect);
   }
 }
 
@@ -499,11 +582,14 @@ void paintTigres(SDL_Renderer *r, map_t *m, int t) {
   }
 
 
-  if(m->dir_tigre == 1) {
-    m->tigre_p.x++;
-  } else {
-    m->tigre_p.x--;
+  if(t!= 0) {
+    if(m->dir_tigre == 1) {
+      m->tigre_p.x++;
+    } else {
+      m->tigre_p.x--;
+    }
   }
+
 
   SDL_Rect rect;
   rect.x = m->tigre_p.x;
@@ -513,6 +599,7 @@ void paintTigres(SDL_Renderer *r, map_t *m, int t) {
   //SDL_RenderCopyEx(r,tile_tigres,&rect_tigres[6],&rect, 0,NULL, SDL_FLIP_NONE);  
 
   SDL_RenderCopyEx(r,tile_tigres,&rect_tigres[4 + m->dir_tigre*4 + ((t/8)%4)],&rect, 0,NULL, SDL_FLIP_NONE);  
+
 }
 
 
