@@ -110,7 +110,7 @@ int main(int argc,char *argv[]) {
             m->boolKlakson = 0;
           }
           if(m->getBonus == -1) {
-            switch (checkBonus(m)) {
+            switch (checkBonus(m)) {
               case 0 :
                 m->voiture.vitesse = m->voiture.vitesse*2; break;
               case 1 :
