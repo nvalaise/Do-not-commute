@@ -74,7 +74,8 @@ int main(int argc,char *argv[]) {
     play=getEvent(m);
     if(play != old_state) {
       switch (play) {
-        case 1: break;
+        case 1: 
+          break;
         case 2: 
           m->level = 0;
           m->temps = 0;
@@ -83,7 +84,7 @@ int main(int argc,char *argv[]) {
           reinitCars(m);
           initGame(m);
 
-          Mix_HaltChannel(4);
+          Mix_HaltChannel(-1);
           Mix_PlayChannel(1, son1, -1);
           break;
       }
@@ -115,14 +116,11 @@ int main(int argc,char *argv[]) {
               case 1 :
                 m->voiture.vitesse++; break;
               case 2 :
-              if (Mix_Playing(5) == 1) {
-                Mix_Pause(5);
-                Mix_PlayChannel(2, son2, -1);
-              } else if (Mix_Playing(2) == 1) {
-                Mix_Pause(2);
-                Mix_PlayChannel(5, son5, -1);
+              if (Mix_Playing(2) == 1) {
+                Mix_HaltChannel(2);
+                Mix_PlayChannel(1, son1, -1);
               } else if (Mix_Playing(1) == 1) {
-                Mix_Pause(1);
+                Mix_HaltChannel(1);
                 Mix_PlayChannel(2, son2, -1);
               }
                 break;
@@ -131,9 +129,10 @@ int main(int argc,char *argv[]) {
           }
           if(carArriveInDestination(m) == 1) {
             m->level++;
-            printf("%d\n", m->level);
 
             if(m->level == LEVEL) {
+              Mix_HaltChannel(-1);
+
               m->type_menu = 1;
             } else {
               tour=0;
@@ -141,12 +140,34 @@ int main(int argc,char *argv[]) {
 
               initGame(m);
               reInitTimer();
+
+              if (Mix_Playing(5) == 1) {
+                Mix_HaltChannel(5);
+                if (Mix_Paused(2) == 1) {
+                  Mix_Resume(2);
+                } else if (Mix_Paused(1) == 1) {
+                  Mix_Resume(1);
+                }
+              }
             }
           }
 
           int secondes = (getTimerJeux())/ 1000;
+          if (secondes == TEMPS_MAX - 5) {
+            if (Mix_Playing(5) == 0) {
+              if (Mix_Playing(2) == 1) {
+                Mix_Pause(2);
+              } else if (Mix_Playing(1) == 1) {
+                Mix_Pause(1);
+              }
+              Mix_PlayChannel(5, son5, -1);
+            }
+          }
+
           if (secondes > TEMPS_MAX) {
-            //exit(0);
+            //Mix_HaltChannel(-1);
+            //m->type_menu = 1;
+            //Mix_PlayChannel(1, son1, -1);
           }
         }
 
