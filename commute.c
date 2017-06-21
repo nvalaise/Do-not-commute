@@ -82,7 +82,6 @@ int main(int argc,char *argv[]) {
           m->score = 0;
           tour = 0;
           reInitTimer();
-          reinitCars(m);
           initGame(m);
 
           Mix_HaltChannel(-1);
@@ -132,16 +131,18 @@ int main(int argc,char *argv[]) {
             m->level++;
             m->score+=200;
 
+            reInitTimer();
+
             if(m->level == LEVEL) {
               Mix_HaltChannel(-1);
 
-              m->type_menu = 1;
+              m->type_menu = 3;
             } else {
               tour=0;
               m->temps=0;
 
               initGame(m);
-              reInitTimer();
+              
 
               if (Mix_Playing(5) == 1) {
                 Mix_HaltChannel(5);
@@ -167,9 +168,10 @@ int main(int argc,char *argv[]) {
           }
 
           if (secondes > TEMPS_MAX) {
-            //Mix_HaltChannel(-1);
-            //m->type_menu = 1;
-            //Mix_PlayChannel(1, son1, -1);
+            reInitTimer();
+            Mix_HaltChannel(-1);
+            m->type_menu = 4;
+            Mix_PlayChannel(1, son1, -1);
           }
         }
 
@@ -178,7 +180,22 @@ int main(int argc,char *argv[]) {
         //m->temps = (tour > 200) ? m->temps + 1 : 0;
         tour++;
         break;
+      case 3:
+        timerJeuxWait();
+        paintEnd(r, m, 1);
 
+        if(getTimerJeux() > 4000) {
+          m->type_menu = 1;
+        }
+        break;
+      case 4:
+        timerJeuxWait();
+        paintEnd(r, m, 0);
+
+        if(getTimerJeux() > 4000) {
+          m->type_menu = 1;
+        }
+        break;
       default:
         break;
     }

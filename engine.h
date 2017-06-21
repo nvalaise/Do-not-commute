@@ -3,7 +3,7 @@
 #define NB_FLAMMES 25
 #define FLAMME_SIZE 64
 #define NB_TEMPS 20000
-#define LEVEL 13
+#define LEVEL 3
 #define DELTA_ENNEMIES 10
 
 typedef enum {

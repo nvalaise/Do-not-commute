@@ -13,3 +13,5 @@ void paintTigres(SDL_Renderer *r, map_t *m, int t);
 void paintBonus(SDL_Renderer *r, map_t *m);
 void showLaloux(SDL_Renderer *r, map_t *m);
 void paintMenu(SDL_Renderer *r, map_t *m);
+
+void paintEnd(SDL_Renderer *r, map_t *m, int win);

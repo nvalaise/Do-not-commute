@@ -22,6 +22,8 @@ SDL_Texture *tile_flammes;
 SDL_Texture *tile_level[LEVEL];
 SDL_Texture *tile_police[3];
 SDL_Texture *tile_bonus[4];
+SDL_Texture *tile_laBoule;
+SDL_Texture *tile_tresor;
 
 SDL_Texture *tile_pereFouras;
 
@@ -141,6 +143,21 @@ void loadTiles(SDL_Renderer *s, const map_t *m) {
 
   tile_pereFouras = SDL_CreateTextureFromSurface(s, loadedImage2 );
   SDL_FreeSurface(loadedImage2);
+
+
+  SDL_Surface *loadedImage3=SDL_LoadBMP("data/tresor.bmp");
+  if (loadedImage1 !=NULL) {
+    tile_tresor = SDL_CreateTextureFromSurface(s, loadedImage3 );
+  } else {
+    fprintf(stderr,"Missing file %s:%s\n","data/tresor.bmp",SDL_GetError());
+  }
+
+  SDL_Surface *loadedImage4=SDL_LoadBMP("data/la_boule.bmp");
+  if (loadedImage1 !=NULL) {
+    tile_laBoule = SDL_CreateTextureFromSurface(s, loadedImage4 );
+  } else {
+    fprintf(stderr,"Missing file %s:%s\n","data/la_boule.bmp",SDL_GetError());
+  }
 
 }
 
@@ -435,7 +452,6 @@ void paint(SDL_Renderer *r, map_t *m) {
 
 
   SDL_SetRenderDrawColor(r, 255, 0, 0, 255 );
-
   SDL_Rect rect_progression_bg;
   rect_progression_bg.x = 0;
   rect_progression_bg.y = 0;
@@ -444,7 +460,8 @@ void paint(SDL_Renderer *r, map_t *m) {
   SDL_RenderFillRect(r, &rect_progression_bg);
 
 
-  int secondes = getTimerJeux()/ 1000;
+  float secondes = getTimerJeux()/1000.0;
+
   SDL_SetRenderDrawColor(r, 255, 255, 0, 255 );
   SDL_Rect rect_progression;
   rect_progression.x = 0;
@@ -522,6 +539,30 @@ void paint(SDL_Renderer *r, map_t *m) {
   car_x3.h = 4;
   car_x3.w = 4;
   SDL_RenderFillRect(r, &car_x3);
+
+  /* Affiche le tout  */
+  SDL_RenderPresent(r);
+
+  if(m->type_menu == 0) {
+    TTF_CloseFont(font_60);
+    TTF_CloseFont(font_120);   
+  }
+}
+
+void paintEnd(SDL_Renderer *r, map_t *m, int win) {
+  SDL_SetRenderDrawColor(r, 0, 0, 0, 255 );
+  SDL_RenderClear(r);
+
+  SDL_Rect rect_bg;
+  rect_bg.x = 0;
+  rect_bg.y = 0;
+  rect_bg.h = m->hauteur;
+  rect_bg.w = m->largeur;
+  if(win) {
+    SDL_RenderCopy(r,tile_tresor,NULL,&rect_bg);
+  } else {
+    SDL_RenderCopy(r,tile_laBoule,NULL,&rect_bg);
+  }
 
   /* Affiche le tout  */
   SDL_RenderPresent(r);
