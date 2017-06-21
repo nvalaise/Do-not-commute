@@ -543,7 +543,7 @@ int checkPoliceCatchCar(map_t *m, int t) {
       rad = angle1 * M_PI / 180.0;
 
       if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1)) {
-        for(j=0; j<NB_TEMPS;j++) {
+        for(j=0; j<NB_TEMPS;j++) {
           resetCar(m, i, j);
         }
         m->score -= 100;

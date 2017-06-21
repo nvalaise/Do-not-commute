@@ -565,7 +565,7 @@ void paintPolice(SDL_Renderer *r,const map_t *m, int t) {
   }
 }
 
-void paintFlammes(SDL_Renderer *r,const car_t c) {
+void paintFlammes(SDL_Renderer *r,const car_t c) {
   if(c.collision) {
     SDL_Rect rect;
     rect.x = c.x - c.hauteur;
@@ -577,7 +577,7 @@ void paintFlammes(SDL_Renderer *r,const car_t c) {
   }
 }
 
-void paintTigres(SDL_Renderer *r, map_t *m, int t) {
+void paintTigres(SDL_Renderer *r, map_t *m, int t) {
   if(m->tigre_p.x >= 750) {
     m->dir_tigre = 0;
   } else if (m->tigre_p.x <= 425) {
@@ -585,7 +585,7 @@ void paintTigres(SDL_Renderer *r, map_t *m, int t) {
   }
 
 
-  if(t!= 0) {
+  if(t!= 0) {
     if(m->dir_tigre == 1) {
       m->tigre_p.x++;
     } else {
