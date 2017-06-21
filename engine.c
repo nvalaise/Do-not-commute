@@ -39,7 +39,7 @@ int getEvent(map_t *m) {
       }
     }
 
-    if (event.type == SDL_MOUSEBUTTONDOWN) {
+    if (event.type == SDL_MOUSEBUTTONDOWN && m->type_menu == 1) {
       int x, y;
       SDL_Point mouse;
       SDL_Rect boutton_play, boutton_quit;
@@ -70,7 +70,7 @@ int getEvent(map_t *m) {
 
     }
   }
-  return 1;
+  return m->type_menu;
 }
 
 void loadCheckpoints(map_t *m) {
@@ -174,6 +174,7 @@ void initGame(map_t *m) {
   m->voiture.x = m->checkpoints[m->rang_checkpoints_src][0]-20;
   m->voiture.y = m->checkpoints[m->rang_checkpoints_src][1]-20;
   m->voiture.angle = 0;
+  m->voiture.collision = 0;
   m->boolKlakson = 0;
 
   m->voiture.checkpoints_src = m->rang_checkpoints_src;
@@ -191,7 +192,7 @@ void initGame(map_t *m) {
   m->photo_laloux.y = m->hauteur/2 - 3;
 
   // Gestion de la police
-  int deltaCollision, delta = 120;
+  int deltaCollision, delta = 70;
   for(i=1;i<m->level; i++) {
     deltaCollision = 0;
 
@@ -248,7 +249,7 @@ car_t setCarType(type_t type) {
       new_car.hauteur = SIZE + 8;
       break;
     case TRUCK:
-      new_car.vitesse = 1.0;
+      new_car.vitesse = 2.0;
       new_car.type = type;
       new_car.largeur = SIZE + 8;
       new_car.hauteur = SIZE + 8;
@@ -295,7 +296,7 @@ void performedCar(map_t *m) {
   int angle0 = (m->voiture.angle-90) * M_PI / 180.0;
 
   int collision = 0;
-  if(m->getBonus != 1) {
+  if(m->getBonus != 1 && !m->voiture.collision) {
     for(i=0; i<m->level; i++) {
 
       car_t voiture_e = m->cars[i][m->temps];
@@ -303,24 +304,23 @@ void performedCar(map_t *m) {
       int center1_y = voiture_e.y + voiture_e.hauteur/2;
       int angle1 = (voiture_e.angle-90) * M_PI / 180.0;
 
-      if(!m->voiture.collision && m->getBonus != 1) {
+      if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1)) {
+        collision = 1;
+        m->voiture.collision = NB_FLAMMES;
+        m->boolPolice[m->level] = 1;
+        m->score -= 10;
+      }
+
+      if(m->boolPolice[i]) {
+        voiture_e = m->police[i][m->temps];
+        center1_x = voiture_e.x + voiture_e.largeur/2;
+        center1_y = voiture_e.y + voiture_e.hauteur/2;
+        angle1 = (voiture_e.angle-90) * M_PI / 180.0;
+
         if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1)) {
           collision = 1;
           m->voiture.collision = NB_FLAMMES;
           m->boolPolice[m->level] = 1;
-        }
-
-        if(m->boolPolice[i]) {
-          voiture_e = m->police[i][m->temps];
-          center1_x = voiture_e.x + voiture_e.largeur/2;
-          center1_y = voiture_e.y + voiture_e.hauteur/2;
-          angle1 = (voiture_e.angle-90) * M_PI / 180.0;
-
-          if(check_collision(center_x, center_y, rad, center1_x, center1_y, angle1)) {
-            collision = 1;
-            m->voiture.collision = NB_FLAMMES;
-            m->boolPolice[m->level] = 1;
-          }
         }
       }
     }
@@ -423,6 +423,21 @@ int checkBonus(map_t *m) {
 
   if(PointInRect(&car_center, &rect)) {
     m->getBonus = m->typeBonus;
+    switch (m->typeBonus) {
+      case 0:
+        m->score+=50;
+        break;
+      case 1:
+        m->score+=100;
+        break;
+      case 2:
+        m->score+=20;
+        break;
+      case 3:
+        m->score+=500;
+        break;
+      default: break;
+    }
   }
   return m->getBonus;
 }
@@ -531,6 +546,7 @@ int checkPoliceCatchCar(map_t *m, int t) {
         for(j=0; j<NB_TEMPS;j++) {
           resetCar(m, i, j);
         }
+        m->score -= 100;
         m->boolPolice[j] = 0;
       }
     }

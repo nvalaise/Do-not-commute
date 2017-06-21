@@ -414,9 +414,12 @@ void paint(SDL_Renderer *r, map_t *m) {
 
   rect_text.x=10;
   rect_text.y=80;
-  rect_text.w=100;
+  rect_text.w=200;
   rect_text.h=30;
-  SDL_Surface *texte_score = TTF_RenderText_Solid(font_60, "Score :", couleurNoire);
+
+  char score[20];
+  sprintf(score, "Score : %d", m->score);
+  SDL_Surface *texte_score = TTF_RenderText_Solid(font_60, score, couleurNoire);
   SDL_Texture *texture_texte_score = SDL_CreateTextureFromSurface(r, texte_score);
   SDL_RenderCopy(r, texture_texte_score, NULL, &rect_text);
 

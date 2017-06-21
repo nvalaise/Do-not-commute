@@ -79,6 +79,7 @@ int main(int argc,char *argv[]) {
         case 2: 
           m->level = 0;
           m->temps = 0;
+          m->score = 0;
           tour = 0;
           reInitTimer();
           reinitCars(m);
@@ -129,6 +130,7 @@ int main(int argc,char *argv[]) {
           }
           if(carArriveInDestination(m) == 1) {
             m->level++;
+            m->score+=200;
 
             if(m->level == LEVEL) {
               Mix_HaltChannel(-1);
@@ -173,7 +175,7 @@ int main(int argc,char *argv[]) {
 
         paint(r,m);
 
-        m->temps = (tour > 200) ? m->temps + 1 : 0;
+        //m->temps = (tour > 200) ? m->temps + 1 : 0;
         tour++;
         break;
 

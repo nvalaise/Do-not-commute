@@ -87,6 +87,8 @@ typedef struct {
   SDL_Point tigre_p;
   int dir_tigre;
 
+  int score;
+
 
 } map_t;
 
